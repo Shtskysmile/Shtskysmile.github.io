@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import { ThemeContext } from "@/context/ThemeContext";
 import { useTheme } from "@/hooks/useTheme";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import NotFoundPage from "@/pages/NotFoundPage";
 import Skeleton from "@/components/ui/Skeleton";
 
@@ -68,7 +67,6 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
-        <Footer />
       </div>
     </ThemeContext.Provider>
   );

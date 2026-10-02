@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import Grid from "@/components/layout/Grid";
 import ProfileCard from "@/components/ProfileCard";
 import CertificateCard from "@/components/CertificateCard";
-import SkillsSection from "@/components/SkillsSection";
+import SitePurpose from "@/components/SitePurpose";
 import BackToTop from "@/components/BackToTop";
 import Skeleton from "@/components/ui/Skeleton";
 import { useLenis } from "@/hooks/useLenis";
@@ -84,7 +84,7 @@ export default function HomePage() {
         }
         right={
           <>
-            <SkillsSection />
+            <SitePurpose />
             {/* 项目板块暂时隐藏，需要时取消注释
             <Suspense fallback={<ProjectListFallback />}>
               <ProjectList />

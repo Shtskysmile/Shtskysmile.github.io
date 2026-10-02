@@ -36,28 +36,9 @@ export default function ProfileCard() {
 
   return (
     <Card className="overflow-hidden p-0">
-      {/* Cover */}
-      <div className="-mx-3 -mt-3 mb-4">
-        <picture data-live2d-hover="cover">
-          <source
-            type="image/webp"
-            srcSet="/images/covers/cover-640w.webp 640w, /images/covers/cover-960w.webp 960w, /images/covers/cover-1280w.webp 1280w"
-            sizes="(max-width: 640px) 640px, (max-width: 960px) 960px, 1280px"
-          />
-          <img
-            src="/images/covers/cover.jpeg"
-            alt="封面"
-            width={1280}
-            height={720}
-            loading="eager"
-            className="h-40 w-full rounded-xl border-b border-white/80 object-cover shadow-sm dark:border-stone-700/60 sm:h-52"
-          />
-        </picture>
-      </div>
-
-      <div className="relative px-1 pb-4">
+      <div className="relative px-4 pb-4 pt-4">
         {/* Avatar */}
-        <div className="-mt-14 mb-3">
+        <div className="mb-3">
           <img
             src={GITHUB_AVATAR_URL}
             alt="Shtskysmile 头像"

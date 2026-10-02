@@ -80,7 +80,7 @@ export default function Header() {
         hidden ? "-translate-y-full" : "translate-y-0"
       }`}
     >
-      <div className="flex items-center gap-4 px-4 py-3 sm:px-6">
+      <div className="flex items-center gap-5 px-4 py-3 sm:px-6">
         <div className="flex shrink-0 items-center gap-3">
           <a
             href="/"
@@ -108,9 +108,15 @@ export default function Header() {
           </div>
         </div>
 
+        {/* 分隔线：把站名/校徽和分类导航分开，否则八个元素挤成一排 */}
+        <span
+          aria-hidden="true"
+          className="hidden h-5 w-px shrink-0 bg-stone-200 dark:bg-stone-700 md:block"
+        />
+
         {/* 分类导航：和站名同一行，窄屏放不下就隐藏（分类仍可从 /blogs 进入） */}
         <nav aria-label="文章分类" className="hidden min-w-0 flex-1 md:block">
-          <ul className="flex items-center gap-x-4 text-sm">
+          <ul className="flex items-center gap-x-3 text-sm lg:gap-x-5">
             <li>
               <NavLink to="/blogs" end className={categoryLinkClass}>
                 全部文章

@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import BlogCard from "@/components/BlogCard";
 import CategoryCover from "@/components/CategoryCover";
+import ArtCredit from "@/components/ArtCredit";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import Pagination from "@/components/Pagination";
 import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
@@ -38,6 +40,8 @@ export default function CategoryPage() {
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visible = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const animeArt = useAnimeArt(PAGE_SIZE);
+  const [heroArt] = useAnimeArt(1);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -49,7 +53,7 @@ export default function CategoryPage() {
 
   if (!category) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-24">
+      <div className="surface-panel mx-auto my-24 flex w-[calc(100%-2rem)] max-w-3xl flex-col items-center justify-center p-10">
         <h1 className="mb-2 font-heading text-2xl text-stone-800 dark:text-stone-100">
           分类不存在
         </h1>
@@ -86,7 +90,7 @@ export default function CategoryPage() {
         <meta name="twitter:image" content={`${BASE_URL}/images/covers/cover.jpg`} />
       </Helmet>
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <div className="surface-panel mx-auto my-6 w-[calc(100%-2rem)] max-w-6xl p-5 sm:p-8">
         <div className="mb-6 flex items-center justify-between">
           <button
             onClick={() => window.history.back()}
@@ -97,12 +101,19 @@ export default function CategoryPage() {
           </button>
         </div>
 
-        {/* 分类头图 */}
-        <CategoryCover
-          category={category.id}
-          seed={BLOG_CATEGORIES.findIndex((c) => c.id === category.id)}
-          className="mb-5 h-28 w-full rounded-xl shadow-sm"
-        />
+        {/* 分类头图：随机二次元图，取不到时退回内置 SVG */}
+        {heroArt ? (
+          <div className="relative mb-2 h-32 w-full overflow-hidden rounded-xl shadow-sm">
+            <img src={heroArt.src} alt="" className="h-full w-full object-cover object-top" />
+            <ArtCredit art={heroArt} variant="overlay" className="absolute bottom-1.5 right-1.5" />
+          </div>
+        ) : (
+          <CategoryCover
+            category={category.id}
+            seed={BLOG_CATEGORIES.findIndex((c) => c.id === category.id)}
+            className="mb-5 h-28 w-full rounded-xl shadow-sm"
+          />
+        )}
 
         <div className="mb-6">
           <h1 className="font-heading text-2xl text-stone-800 dark:text-stone-100">
@@ -120,9 +131,9 @@ export default function CategoryPage() {
           </p>
         ) : (
           <>
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
               {visible.map((post, i) => (
-                <BlogCard key={post.blogUrl} post={post} index={i} />
+                <BlogCard key={post.blogUrl} post={post} index={i} art={animeArt[i]} />
               ))}
             </div>
             <Pagination page={currentPage} totalPages={totalPages} hrefFor={hrefForPage} />

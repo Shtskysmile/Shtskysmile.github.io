@@ -10,6 +10,8 @@ import BackToTop from "@/components/BackToTop";
 import { articleComponents, remarkNote } from "@/components/ArticleMarkdown";
 import ArticleToc, { useArticleToc } from "@/components/ArticleToc";
 import CategoryCover from "@/components/CategoryCover";
+import ArtCredit from "@/components/ArtCredit";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { formatRelativeDate, formatAbsoluteDate, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
@@ -24,6 +26,7 @@ export default function BlogArticlePage() {
   const [notFound, setNotFound] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   const { items: tocItems, activeId } = useArticleToc(articleRef, markdown);
+  const [art] = useAnimeArt(1);
 
   const post = allPosts.find((p) => p.blogUrl.replace(/\.md$/, "") === slug);
   const siteName = "Shtskysmile 的个人主页";
@@ -153,7 +156,7 @@ export default function BlogArticlePage() {
 
   if (notFound || !post) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-24">
+      <div className="surface-panel mx-auto my-24 flex w-[calc(100%-2rem)] max-w-3xl flex-col items-center justify-center p-10">
         <h1 className="mb-2 font-heading text-2xl text-stone-800 dark:text-stone-100">
           文章不存在
         </h1>
@@ -213,8 +216,8 @@ export default function BlogArticlePage() {
         style={{ transform: "scaleX(0)" }}
       />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:max-w-5xl">
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-10">
+      <div className="surface-panel mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl p-5 sm:p-8 lg:max-w-7xl">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-12">
           <div className="min-w-0">
             {/* Back button */}
             <button
@@ -273,7 +276,7 @@ export default function BlogArticlePage() {
                   ))}
                 </div>
 
-                {/* Thumbnail：配了图就用图，没配就用分类封面 */}
+                {/* 封面优先级：手动配的图 > 随机二次元图 > 内置 SVG */}
                 {post.thumbnail ? (
                   <img
                     src={`/images/blog/${post.thumbnail}`}
@@ -282,6 +285,10 @@ export default function BlogArticlePage() {
                     height={400}
                     className="mb-8 w-full rounded-xl object-cover shadow-sm"
                   />
+                ) : art ? (
+                  <div className="mb-2 aspect-[2/1] w-full overflow-hidden rounded-xl shadow-sm">
+                    <img src={art.src} alt="" className="h-full w-full object-cover object-top" />
+                  </div>
                 ) : (
                   <CategoryCover
                     category={post.category}
@@ -289,6 +296,7 @@ export default function BlogArticlePage() {
                     className="mb-8 h-auto w-full rounded-xl shadow-sm"
                   />
                 )}
+                {!post.thumbnail && <ArtCredit art={art} className="mb-8" />}
 
                 {/* Article content */}
                 <article

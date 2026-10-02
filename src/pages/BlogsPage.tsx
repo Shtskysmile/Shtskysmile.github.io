@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpDown, BookOpen } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import BlogCard from "@/components/BlogCard";
 import Pagination from "@/components/Pagination";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 
@@ -38,6 +39,7 @@ export default function BlogsPage() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visible = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const animeArt = useAnimeArt(PAGE_SIZE);
 
   return (
     <>
@@ -62,7 +64,7 @@ export default function BlogsPage() {
         />
       </Helmet>
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <div className="surface-panel mx-auto my-6 w-[calc(100%-2rem)] max-w-6xl p-5 sm:p-8">
         {/* Navigation */}
         <div className="mb-6 flex items-center justify-between">
           <button
@@ -98,9 +100,9 @@ export default function BlogsPage() {
         </div>
 
         {/* List */}
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
           {visible.map((post, i) => (
-            <BlogCard key={post.blogUrl} post={post} index={i} />
+            <BlogCard key={post.blogUrl} post={post} index={i} art={animeArt[i]} />
           ))}
         </div>
 

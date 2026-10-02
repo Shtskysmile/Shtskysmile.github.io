@@ -41,7 +41,7 @@ $$
 - $\gamma$：折扣因子 $\gamma \in [0, 1]$ —— 未来奖励在当前决策中的重要程度
 
 **马尔可夫性质（无记忆性）**：下一状态只依赖当前状态和动作，与更早的历史无关：
-`P(s_{t+1} | s_t, a_t, s_{t-1}, a_{t-1}, ...) = P(s_{t+1} | s_t, a_t)`
+$P(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \dots) = P(s_{t+1} \mid s_t, a_t)$
 
 ### 1.3 策略、价值函数、Q 函数、return
 
@@ -51,10 +51,10 @@ $$
   G_t = r_{t+1} + γ·r_{t+2} + γ²·r_{t+3} + ... = Σ_{k=0}^∞ γ^k · r_{t+k+1}
   ```
 - **价值函数 V(s)**：从状态 s 出发、按策略 π 行动，未来能获得的**期望** return
-  `V^π(s) = E_π[G_t | s_t = s]`
+  $V^{\pi}(s) = \mathbb{E}_{\pi}[G_t \mid s_t = s]$
 - **Q 函数（动作价值函数）Q(s,a)**：在状态 s 先执行动作 a、之后按 π 行动，未来能获得的期望 return
-  `Q^π(s,a) = E_π[G_t | s_t = s, a_t = a]`
-- 两者关系：`V^π(s) = Σ_a π(a|s)·Q^π(s,a)`（价值 = 各动作 Q 值按策略加权平均）
+  $Q^{\pi}(s,a) = \mathbb{E}_{\pi}[G_t \mid s_t = s,\, a_t = a]$
+- 两者关系：$V^{\pi}(s) = \sum_a \pi(a \mid s) \cdot Q^{\pi}(s,a)$（价值 = 各动作 Q 值按策略加权平均）
 
 ### 1.4 episode 与 trajectory
 
@@ -134,7 +134,7 @@ $$
 Q^{*}(s, a) = \mathbb{E}\left[r + \gamma \max_{a'} Q^{*}(s', a')\right]
 $$
 
-最优策略：每步取 `argmax_a Q*(s,a)`。
+最优策略：每步取 $\arg\max_a Q^{*}(s,a)$。
 
 ### 2.3 动态规划（已知模型时的求解）
 
@@ -166,7 +166,7 @@ $$
 | **偏差/方差** | 无偏，方差大 | 有偏，方差小 |
 | **适用** | 有终止的回合制任务 | 可处理不终止的持续任务，学习快 |
 
-TD 的核心：`V(s) ← V(s) + α·[r + γV(s') − V(s)]`，方括号里叫 **TD error**。
+TD 的核心：$V(s) \leftarrow V(s) + \alpha\left[r + \gamma V(s') - V(s)\right]$，方括号里叫 **TD error**。
 
 ### 3.2 Q-learning（off-policy 的经典）
 
@@ -231,9 +231,9 @@ $$
 ### 4.2 降方差的两个手段
 
 1. **Baseline（基线）**：减掉与动作无关的基线（如状态价值 V(s)）：
-   `∇J = E[ ∇log π(a|s) · (G_t − b(s)) ]`，方差降、期望不变
+   $\nabla J = \mathbb{E}\left[\nabla \log \pi(a \mid s) \cdot (G_t - b(s))\right]$，方差降、期望不变
 2. **Actor-Critic**：用 critic 估计的价值替代/辅助 G_t，即用 **advantage**（优势函数）：
-   `A(s,a) = Q(s,a) − V(s)`（这个动作比平均好多少）
+   $A(s,a) = Q(s,a) - V(s)$（这个动作比平均好多少）
 
 ### 4.3 Actor-Critic 架构
 

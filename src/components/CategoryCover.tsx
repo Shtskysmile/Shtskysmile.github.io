@@ -30,7 +30,7 @@ export default function CategoryCover({ category, seed, className }: CategoryCov
   const stripeOffset = (seed * 17) % 40;
 
   return (
-    <svg viewBox="0 0 160 80" className={className} aria-hidden="true">
+    <svg viewBox="0 0 160 80" preserveAspectRatio="none" className={className} aria-hidden="true">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2={x2} y2="1">
           <stop offset="0%" stopColor={from} />

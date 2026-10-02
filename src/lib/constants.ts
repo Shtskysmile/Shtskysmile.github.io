@@ -60,6 +60,12 @@ export const BLOG_CATEGORIES = [
     description: "压在底下的东西",
     colors: ["#4c4c66", "#12121a"],
   },
+  {
+    id: "uestc",
+    name: "电子科大专区",
+    description: "成电相关的记录与经验",
+    colors: ["#3a6ea8", "#1c3d63"],
+  },
 ] as const;
 
 /** 分类缺省值。blogs.json 是 JSON 断言成类型的，字段漏写不会被 TS 拦下。 */

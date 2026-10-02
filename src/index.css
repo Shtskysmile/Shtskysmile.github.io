@@ -39,6 +39,8 @@ input[type="submit"],
 @layer base {
   html {
     @apply overflow-x-hidden scroll-smooth;
+    /* 整体字号比浏览器默认的 16px 大一档，文字和间距（rem）一起放大 */
+    font-size: 17px;
   }
 
   body {
@@ -47,6 +49,35 @@ input[type="submit"],
 
   .dark body {
     @apply bg-surface-dark text-stone-100;
+  }
+
+  /* 整页固定背景：图片一层、暗化遮罩一层。
+     两者都在 z-index: -1。html 没设背景，所以 body 的背景会被提升为
+     画布背景画在最底层，不会挡住这两层。 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: url("/images/bg/scenery.jpg");
+    background-size: cover;
+    background-position: center;
+    /* 原图只有 900px 宽，放大后靠模糊掩盖插值痕迹；
+       模糊会让边缘透出底色，所以再放大一点点盖住 */
+    filter: blur(3px) saturate(1.05);
+    transform: scale(1.06);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    @apply bg-black/35;
+  }
+
+  .dark body::after {
+    @apply bg-black/65;
   }
 
   /* Scrollbar */
@@ -112,6 +143,35 @@ input[type="submit"],
 
 .live2d-wiggle {
   animation: live2d-wiggle 0.55s ease-in-out;
+}
+
+/* ── 内容面板 ── */
+/* 整页背景是暗化的风景图，标题/正文直接铺在图上对比度不够，
+   所以列表页与阅读页的主内容都垫一层半透明面板。 */
+@layer components {
+  .surface-panel {
+    @apply rounded-2xl bg-surface-card-light/85 shadow-sm backdrop-blur-md dark:bg-surface-card-dark/85;
+  }
+}
+
+/* ── 正文里的公式 ── */
+/* KaTeX 默认字号是 1.21em，相对正文（16px）偏小，整体放大一档。
+   选择器带上 .prose 是为了压过 KaTeX 自带样式——它的 CSS 随文章页的
+   chunk 一起加载，在 index.css 之后，同级选择器会被它盖掉。 */
+.prose .katex {
+  font-size: 1.4em;
+}
+
+.prose .katex-display > .katex {
+  font-size: 1.55em;
+}
+
+/* 放大的公式在窄屏会宽过正文列。不加这行的话溢出部分会被 html 上的
+   overflow-x: hidden 裁掉、且滚不到；让它自己横向滚动更稳妥。 */
+.prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25em 0;
 }
 
 /* ── Reduced Motion ── */

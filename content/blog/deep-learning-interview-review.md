@@ -61,13 +61,13 @@ Momentum 相当于给梯度下降加惯性，减少震荡；RMSProp 会根据历
 
 BatchNorm 在 batch 维上做归一化，适合 CNN 且依赖 batch 大小；LayerNorm 在单个样本的特征维上归一化，适合 NLP 和变长序列；GroupNorm 把通道分组后归一化，对小 batch 更友好。
 
-**5. [面] 为什么 Self-Attention 要做 `QK^T / sqrt(d)`？**
+**5. [面] 为什么 Self-Attention 要做 $QK^{\top} / \sqrt{d}$？**
 
-因为向量维度增大时，点积的方差会增大，softmax 更容易进入饱和区。除以 `sqrt(d)` 能把数值尺度拉回更稳定的范围。
+因为向量维度增大时，点积的方差会增大，softmax 更容易进入饱和区。除以 $\sqrt{d}$ 能把数值尺度拉回更稳定的范围。
 
 **6. [面] Self-Attention 的时间复杂度和空间复杂度分别是什么？**
 
-若序列长度为 `n`、隐藏维度为 `d`，Self-Attention 的主要复杂度通常写作 `O(n^2 d)`，空间复杂度则主要受注意力矩阵影响，约为 `O(n^2)`。
+若序列长度为 $n$、隐藏维度为 $d$，Self-Attention 的主要复杂度通常写作 $O(n^2 d)$，空间复杂度则主要受注意力矩阵影响，约为 $O(n^2)$。
 
 **7. [面] 训练深层网络时，初始化策略为什么重要？**
 

@@ -28,7 +28,7 @@ export interface SkillsData {
 }
 
 /** 博客分类，与 constants.ts 的 BLOG_CATEGORIES 一一对应 */
-export type BlogCategoryId = "study" | "life" | "games" | "abyss";
+export type BlogCategoryId = "study" | "life" | "games" | "abyss" | "uestc";
 
 export interface BlogPost {
   title: string;
