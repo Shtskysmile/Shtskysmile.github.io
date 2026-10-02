@@ -12,27 +12,31 @@ import CodeBlock from "@/components/CodeBlock";
  */
 
 /**
- * `> [!NOTE] 标题` 必须单独占一段，正文从下一段开始（中间留空行）：
+ * `> [!NOTE] 标题` 渲染成提示框。正文另起一段、或紧跟标题的下一行，两种都认
+ * （与 GitHub 原生一致，不强制空行）：
  *
  *     > [!NOTE] 作者的话
- *     >
  *     > 正文……
  *
  * 判定放在 mdast 层：到 hast 阶段，每个块级子节点之间会被插进 "\n" 文本节点，
- * 那时按索引找段落已经不可靠了。这里把标记行整段摘掉，标题挂到 data-note。
- * 首段若不是「单行纯文本且以 [!NOTE] 开头」，原样留作普通引用块——漏写空行只会
- * 显示成普通引用，而不会把正文误当成标题吞掉。
+ * 那时按索引找段落已经不可靠了。这里把标记行从首段摘掉（首段只剩标题就整段删除），
+ * 标题挂到 data-note。首段不以纯文本 [!NOTE] 开头时原样留作普通引用块。
  */
-const NOTE_MARKER = /^\[!NOTE\][ \t]*([^\n]*)$/;
+const NOTE_MARKER = /^\[!NOTE\][ \t]*([^\n]*)(?:\n|$)/;
 
 function takeNoteMarker(node: Blockquote): string | null {
   const first = node.children[0];
-  const text =
-    first?.type === "paragraph" && first.children.length === 1 ? first.children[0] : undefined;
-  const match = text?.type === "text" ? NOTE_MARKER.exec(text.value) : null;
+  if (first?.type !== "paragraph" || first.children.length !== 1) return null;
+  const text = first.children[0];
+  if (text?.type !== "text") return null;
+
+  const match = NOTE_MARKER.exec(text.value);
   if (!match) return null;
 
-  node.children.shift();
+  const rest = text.value.slice(match[0].length);
+  if (rest === "") node.children.shift();
+  else text.value = rest;
+
   return match[1]?.trim() || "注意";
 }
 

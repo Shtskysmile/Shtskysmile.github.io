@@ -7,5 +7,131 @@
     "publishDate": "2026-10-02",
     "blogUrl": "llm-interview-review.md",
     "highlight": true
+  },
+  {
+    "title": "数据结构与算法面试复习资料",
+    "description": "复杂度分析、线性表、树、图、排序查找与动态规划的常见面试题，文末附限时短笔练习。",
+    "tags": ["数据结构", "算法", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "data-structures-algorithms-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "操作系统面试复习资料",
+    "description": "进程与线程、内存管理、文件与 I/O、调度与同步的常见面试题。",
+    "tags": ["操作系统", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "operating-systems-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "计算机网络面试复习资料",
+    "description": "TCP/IP、HTTP 演进、DNS、Cookie/Session/JWT 等常见网络面试题。",
+    "tags": ["计算机网络", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "computer-networks-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "计算机组成原理面试复习资料",
+    "description": "存储层次、Cache 映射、流水线冒险、中断异常与浮点数的常见面试题。",
+    "tags": ["计算机组成原理", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "computer-organization-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "数据库与 SQL 面试复习资料",
+    "description": "范式、索引与回表、事务隔离、锁与手写 SQL 题，文末附限时短笔练习。",
+    "tags": ["数据库", "SQL", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "database-sql-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "软件工程面试复习资料",
+    "description": "软件生命周期、测试分层、CI/CD、代码评审与技术债的常见面试题。",
+    "tags": ["软件工程", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "software-engineering-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "机器学习面试复习资料",
+    "description": "监督与自监督、过拟合、经典模型、集成方法与偏差-方差的常见面试题。",
+    "tags": ["机器学习", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "machine-learning-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "深度学习面试复习资料",
+    "description": "激活函数、归一化、优化器、注意力机制与参数高效微调的常见面试题。",
+    "tags": ["深度学习", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "deep-learning-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "强化学习基础面试复习资料",
+    "description": "MDP、贝尔曼方程、Q-learning、PPO 与 RLHF/DPO 的常见面试题速查。",
+    "tags": ["强化学习", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "reinforcement-learning-basics-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "自然语言处理面试复习资料",
+    "description": "词向量、预训练模型架构、解码策略、长文本与评估指标的常见面试题。",
+    "tags": ["NLP", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "nlp-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "大语言模型与智能体面试复习资料",
+    "description": "训练流程、位置编码与 RoPE、RAG、Function Calling、智能体评估的常见面试题。",
+    "tags": ["LLM", "Agent", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "llm-agents-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "概率论与数理统计面试复习资料",
+    "description": "常见分布、大数定律与中心极限定理、假设检验、最大似然估计的常见面试题。",
+    "tags": ["概率统计", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "probability-statistics-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "线性代数与优化面试复习资料",
+    "description": "秩与特征值、SVD 与 PCA、凸优化与牛顿法的常见面试题。",
+    "tags": ["线性代数", "优化", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "linear-algebra-optimization-interview-review.md",
+    "highlight": true
+  },
+  {
+    "title": "强化学习面试复习资料（面向大模型对齐与智能体）",
+    "description": "12 章系统梳理：从 MDP、贝尔曼方程、Q-learning/DQN 到 PPO、RLHF、DPO、GRPO 与可验证奖励。",
+    "tags": ["强化学习", "RLHF", "DPO", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "reinforcement-learning-interview-review.md",
+    "highlight": true
   }
 ]

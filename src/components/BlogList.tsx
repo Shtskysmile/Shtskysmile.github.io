@@ -10,11 +10,10 @@ import blogsData from "@content/blogs.json";
 
 const allPosts = blogsData as BlogPost[];
 
-/** Highlighted posts, sorted newest-first, limited to 4 */
+/** Highlighted posts, sorted newest-first */
 const highlightedPosts = allPosts
   .filter((p) => p.highlight)
-  .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
-  .slice(0, 4);
+  .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
 
 export default function BlogList() {
   const [markdownMap, setMarkdownMap] = useState<Record<string, string>>({});
@@ -68,9 +67,7 @@ export default function BlogList() {
           <ArrowRight size={14} />
         </Link>
       </div>
-      <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
-        精选文章与随笔
-      </p>
+      <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">精选文章与随笔</p>
 
       {loading && (
         <div className="flex flex-col gap-4">

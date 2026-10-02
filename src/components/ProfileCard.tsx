@@ -17,8 +17,8 @@ const ICON_MAP: Record<string, typeof Github> = {
   YouTube: Youtube,
 };
 
-// Split at the first blank-line boundary so paragraph 1-2 are the preview
-const PREVIEW_CUTOFF = 2;
+// Split at the first blank-line boundaries so the first 3 paragraphs are the preview
+const PREVIEW_CUTOFF = 3;
 
 function splitMarkdown(md: string): [string, string] {
   // Normalise CRLF → LF so the blank-line split works on every OS

@@ -19,9 +19,9 @@ describe("remarkNote", () => {
     expect(bq?.children[0]?.type).toBe("paragraph");
     expect(bq?.data?.hProperties).toEqual({ "data-note": "作者的话" });
     const para = bq?.children[0];
-    expect(para?.type === "paragraph" && para.children[0]?.type === "text"
-      ? para.children[0].value
-      : "").toBe("正文内容");
+    expect(
+      para?.type === "paragraph" && para.children[0]?.type === "text" ? para.children[0].value : "",
+    ).toBe("正文内容");
   });
 
   it("标题留空时回退为「注意」", () => {
@@ -29,15 +29,22 @@ describe("remarkNote", () => {
     expect(bq?.data?.hProperties).toEqual({ "data-note": "注意" });
   });
 
-  it("漏写空行时不吞正文：整块原样保留，不打标记", () => {
-    const bq = run("> [!NOTE] 作者的话\n> 正文内容\n");
+  it("正文紧跟标题下一行（无空行）时同样识别，且不吞正文", () => {
+    const bq = run("> [!NOTE] ✏️ 作者的话\n> 正文内容\n");
+    expect(bq?.data?.hProperties).toEqual({ "data-note": "✏️ 作者的话" });
+    expect(bq?.children).toHaveLength(1);
+    const para = bq?.children[0];
+    expect(
+      para?.type === "paragraph" && para.children[0]?.type === "text" ? para.children[0].value : "",
+    ).toBe("正文内容");
+  });
+
+  it("标题含行内格式（非纯文本）时退回普通引用块，内容不动", () => {
+    const bq = run("> [!NOTE] **作者的话**\n> 正文内容\n");
     expect(bq?.data?.hProperties).toBeUndefined();
     expect(bq?.children).toHaveLength(1);
     const para = bq?.children[0];
-    const text = para?.type === "paragraph" && para.children[0]?.type === "text"
-      ? para.children[0].value
-      : "";
-    expect(text).toContain("正文内容");
+    expect(para?.type === "paragraph" ? para.children.length : 0).toBeGreaterThan(1);
   });
 
   it("普通引用块不受影响", () => {
@@ -47,9 +54,10 @@ describe("remarkNote", () => {
   });
 
   it("嵌套在别处的引用块也能识别", () => {
-    const tree = unified().use(remarkParse).use(remarkGfm).parse(
-      "- 列表项\n\n  > [!NOTE] 嵌套\n  >\n  > 正文\n",
-    ) as Root;
+    const tree = unified()
+      .use(remarkParse)
+      .use(remarkGfm)
+      .parse("- 列表项\n\n  > [!NOTE] 嵌套\n  >\n  > 正文\n") as Root;
     (remarkNote() as unknown as (t: Root) => void)(tree);
     const found: string[] = [];
     (function walk(n: unknown) {

@@ -6,3 +6,5 @@ trash/**/*
 *.tsbuildinfo
 prompt.txt
 __pycache__/**/*
+# drafts: bodies now live in content/blog/; local backup only
+articles/
