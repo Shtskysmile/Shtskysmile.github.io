@@ -103,8 +103,8 @@ export default function CategoryPage() {
 
         {/* 分类头图：随机二次元图，取不到时退回内置 SVG */}
         {heroArt ? (
-          <div className="relative mb-2 h-32 w-full overflow-hidden rounded-xl shadow-sm">
-            <img src={heroArt.src} alt="" className="h-full w-full object-cover object-top" />
+          <div className="relative mb-2 aspect-[4/1] w-full overflow-hidden rounded-xl shadow-sm">
+            <img src={heroArt.heroSrc} alt="" className="h-full w-full object-fill" />
             <ArtCredit art={heroArt} variant="overlay" className="absolute bottom-1.5 right-1.5" />
           </div>
         ) : (

@@ -287,7 +287,7 @@ export default function BlogArticlePage() {
                   />
                 ) : art ? (
                   <div className="mb-2 aspect-[2/1] w-full overflow-hidden rounded-xl shadow-sm">
-                    <img src={art.src} alt="" className="h-full w-full object-cover object-top" />
+                    <img src={art.src} alt="" className="h-full w-full object-fill" />
                   </div>
                 ) : (
                   <CategoryCover

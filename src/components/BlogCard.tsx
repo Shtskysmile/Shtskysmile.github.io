@@ -48,7 +48,7 @@ export default function BlogCard({ post, index, art }: BlogCardProps) {
             src={art.src}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-fill transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <CategoryCover
