@@ -44,10 +44,7 @@ export default function HomePage() {
     <>
       <Helmet>
         <title>Shtskysmile 的个人主页</title>
-        <meta
-          name="description"
-          content="Shtskysmile 的个人主页 - 记录我的项目、技能与文章。"
-        />
+        <meta name="description" content="Shtskysmile 的个人主页 - 记录我的项目、技能与文章。" />
         <link rel="canonical" href="https://shtskysmile.github.io/" />
 
         <meta property="og:type" content="website" />
@@ -62,7 +59,10 @@ export default function HomePage() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Shtskysmile 的个人主页" />
         <meta name="twitter:description" content="记录我的项目、技能与文章。" />
-        <meta name="twitter:image" content="https://shtskysmile.github.io/images/covers/cover.jpg" />
+        <meta
+          name="twitter:image"
+          content="https://shtskysmile.github.io/images/covers/cover.jpg"
+        />
 
         <script type="application/ld+json">
           {JSON.stringify({

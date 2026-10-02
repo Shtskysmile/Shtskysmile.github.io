@@ -12,7 +12,11 @@ export default function NotFoundPage() {
         </h1>
 
         <p className="mt-6 text-lg text-stone-600 dark:text-stone-400">
-          找不到与 <code className="bg-stone-100 px-1 py-0.5 font-mono text-sm dark:bg-stone-800 dark:text-stone-300">{location.pathname}</code> 匹配的页面。
+          找不到与{" "}
+          <code className="bg-stone-100 px-1 py-0.5 font-mono text-sm dark:bg-stone-800 dark:text-stone-300">
+            {location.pathname}
+          </code>{" "}
+          匹配的页面。
         </p>
 
         <p className="mt-2 text-base text-stone-500 dark:text-stone-500">

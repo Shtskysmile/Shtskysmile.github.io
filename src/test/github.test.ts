@@ -113,9 +113,7 @@ describe("github.ts", () => {
   });
 
   it("throws network error on fetch TypeError", async () => {
-    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(
-      new TypeError("Failed to fetch"),
-    );
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
     try {
       await fetchRepos();

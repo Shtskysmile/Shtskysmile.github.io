@@ -8,15 +8,8 @@ const MOBILE_BREAKPOINT = 768;
 const MOBILE_SCALE = 0.55;
 
 export default function Live2DWidget() {
-  const {
-    message,
-    showMessage,
-    hostRef,
-    dragHandlers,
-    isLoaded,
-    changeMotion,
-    getHiddenMessage,
-  } = useLive2D();
+  const { message, showMessage, hostRef, dragHandlers, isLoaded, changeMotion, getHiddenMessage } =
+    useLive2D();
   const [hidden, setHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const prefersReduced = useReducedMotion();

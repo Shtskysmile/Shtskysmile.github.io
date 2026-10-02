@@ -30,10 +30,7 @@ function ProjectSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-xl border border-stone-200 p-4 dark:border-stone-700"
-        >
+        <div key={i} className="rounded-xl border border-stone-200 p-4 dark:border-stone-700">
           <Skeleton className="mb-3 h-5 w-32" />
           <Skeleton className="mb-2 h-4 w-full" />
           <Skeleton className="h-4 w-3/4" />
@@ -65,9 +62,7 @@ export default function ProjectList() {
             <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
           </button>
         </div>
-        <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
-          最近更新的公开仓库
-        </p>
+        <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">最近更新的公开仓库</p>
 
         {isLoading && <ProjectSkeleton />}
 

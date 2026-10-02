@@ -70,7 +70,9 @@ export default function ProfileCard() {
         </div>
 
         {/* Name */}
-        <h1 className="mb-3 font-heading text-2xl text-stone-800 dark:text-stone-100">Shtskysmile</h1>
+        <h1 className="mb-3 font-heading text-2xl text-stone-800 dark:text-stone-100">
+          Shtskysmile
+        </h1>
 
         {/* Bio */}
         <section aria-label="关于我" data-live2d-hover="about">
