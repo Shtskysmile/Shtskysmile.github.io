@@ -10,6 +10,7 @@ const HomePage = lazy(() => import("@/pages/HomePage"));
 const BlogsPage = lazy(() => import("@/pages/BlogsPage"));
 const BlogArticlePage = lazy(() => import("@/pages/BlogArticlePage"));
 const CategoryPage = lazy(() => import("@/pages/CategoryPage"));
+const GachaPage = lazy(() => import("@/pages/GachaPage"));
 
 function PageFallback() {
   return (
@@ -61,6 +62,14 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <CategoryPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/gacha"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <GachaPage />
                 </Suspense>
               }
             />

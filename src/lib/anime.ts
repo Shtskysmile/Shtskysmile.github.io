@@ -1,9 +1,17 @@
+import { coverSeed } from "@/lib/blog";
+
 /**
  * 文章封面用的随机二次元图。
  *
  * 为什么是 nekos.best：公开接口里少有的同时满足两个硬条件——
  * 支持 CORS（纯静态站只能在浏览器里直接请求）、返回画师信息（署名要用）。
  * 它只提供角色图（neko / waifu / husbando / kitsune），没有风景分类。
+ *
+ * 关于内容分级：这个接口**不提供 NSFW 内容**，所以没有可加的过滤器。
+ * 实测（2026-10）——返回字段只有 url / artist_name / artist_href / source_url /
+ * dimensions，没有任何 rating 或 tag；/v2/nsfw、/lewd、/hentai、/ero、/ecchi、
+ * /r18 全部 404，而 4 个正常分类都是 200。
+ * 注意这只是「接口没有该分类」，不等于官方出具了 SFW 承诺，个别图仍可能擦边。
  *
  * 原图是 1–3 MB 的 PNG（1152×2048 这种），直接当封面会让一页拉十几 MB，
  * 所以统一过一层 wsrv.nl 缩到 640px 的 WebP，约 60 KB。
@@ -24,7 +32,8 @@ export interface AnimeArt {
 }
 
 const API = "https://nekos.best/api/v2/neko";
-const BATCH = 20;
+/** 一次取多少张。卡片页和阅读页都用这个数，才能拿到同一批图。 */
+export const ANIME_BATCH = 20;
 
 interface RawResult {
   url?: string;
@@ -47,21 +56,25 @@ function proxied(url: string, width: number): string {
 let cache: AnimeArt[] = [];
 let inflight: Promise<AnimeArt[]> | null = null;
 
-async function fetchBatch(): Promise<AnimeArt[]> {
+function toArt(r: RawResult & { url: string }): AnimeArt {
+  return {
+    src: proxied(r.url, 400),
+    heroSrc: proxied(r.url, 1200),
+    url: r.url,
+    artistName: r.artist_name ?? "",
+    artistHref: r.artist_href ?? "",
+    sourceUrl: r.source_url ?? "",
+  };
+}
+
+async function request(amount: number): Promise<AnimeArt[]> {
   try {
-    const res = await fetch(`${API}?amount=${BATCH}`);
+    const res = await fetch(`${API}?amount=${amount}`);
     if (!res.ok) return [];
     const json: { results?: RawResult[] } = await res.json();
     return (json.results ?? [])
       .filter((r): r is RawResult & { url: string } => Boolean(r.url))
-      .map((r) => ({
-        src: proxied(r.url, 400),
-        heroSrc: proxied(r.url, 1200),
-        url: r.url,
-        artistName: r.artist_name ?? "",
-        artistHref: r.artist_href ?? "",
-        sourceUrl: r.source_url ?? "",
-      }));
+      .map(toArt);
   } catch {
     return [];
   }
@@ -76,7 +89,7 @@ export function peekAnimeArt(count: number): AnimeArt[] {
 export async function loadAnimeArt(count: number): Promise<AnimeArt[]> {
   if (cache.length < count) {
     if (!inflight) {
-      inflight = fetchBatch()
+      inflight = request(ANIME_BATCH)
         .then((list) => {
           if (list.length > cache.length) cache = list;
           return cache;
@@ -88,4 +101,20 @@ export async function loadAnimeArt(count: number): Promise<AnimeArt[]> {
     await inflight;
   }
   return cache.slice(0, count);
+}
+
+/**
+ * 按 key（一般传 blogUrl）从一批图里稳定地挑一张。
+ * 卡片和阅读页都用它挑，所以同一篇文章这两处显示的是同一张插画——
+ * 看到喜欢的图点进去还能找到它。
+ */
+export function pickArt(batch: AnimeArt[], key: string): AnimeArt | undefined {
+  if (batch.length === 0) return undefined;
+  return batch[coverSeed(key) % batch.length];
+}
+
+/** 抽卡用：绕开缓存，每次现取一张新的随机图 */
+export async function drawArt(): Promise<AnimeArt | null> {
+  const list = await request(1);
+  return list[0] ?? null;
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
+import { Dices } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import { SCHOOL_EMBLEMS, BLOG_CATEGORIES } from "@/lib/constants";
 
@@ -132,7 +133,15 @@ export default function Header() {
           </ul>
         </nav>
 
-        <div className="ml-auto shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <NavLink
+            to="/gacha"
+            aria-label="抽卡"
+            title="抽卡"
+            className="flex items-center justify-center rounded-full p-2 text-stone-700 transition-colors hover:bg-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            <Dices size={18} />
+          </NavLink>
           <ThemeToggle />
         </div>
       </div>

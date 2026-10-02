@@ -7,6 +7,7 @@ import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
+import { ANIME_BATCH, pickArt } from "@/lib/anime";
 import Pagination from "@/components/Pagination";
 import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
@@ -41,7 +42,7 @@ export default function CategoryPage() {
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visible = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const animeArt = useAnimeArt(PAGE_SIZE);
+  const animeArt = useAnimeArt(ANIME_BATCH);
   const [heroArt] = useAnimeArt(1);
 
   useEffect(() => {
@@ -134,7 +135,12 @@ export default function CategoryPage() {
           <>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
               {visible.map((post, i) => (
-                <BlogCard key={post.blogUrl} post={post} index={i} art={animeArt[i]} />
+                <BlogCard
+                  key={post.blogUrl}
+                  post={post}
+                  index={i}
+                  art={pickArt(animeArt, post.blogUrl)}
+                />
               ))}
             </div>
             <Pagination page={currentPage} totalPages={totalPages} hrefFor={hrefForPage} />
