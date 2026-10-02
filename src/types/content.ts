@@ -34,6 +34,7 @@ export interface BlogPost {
   author: string;
   publishDate: string;
   blogUrl: string;
-  thumbnail: string;
+  /** 文件名（位于 public/images/blog/）。留空则卡片与文章页都不渲染缩略图。 */
+  thumbnail?: string;
   highlight?: boolean;
 }

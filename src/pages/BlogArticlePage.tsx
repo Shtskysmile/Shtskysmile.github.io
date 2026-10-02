@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Skeleton from "@/components/ui/Skeleton";
 import BackToTop from "@/components/BackToTop";
-import { articleComponents } from "@/components/ArticleMarkdown";
+import { articleComponents, remarkNote } from "@/components/ArticleMarkdown";
 import { formatRelativeDate, formatAbsoluteDate, estimateReadingTime } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
@@ -25,9 +25,9 @@ export default function BlogArticlePage() {
   const canonicalUrl = post
     ? `${baseUrl}/blogs/${post.blogUrl.replace(/\.md$/, "")}`
     : `${baseUrl}/blogs`;
-  const ogImageUrl = post
+  const ogImageUrl = post?.thumbnail
     ? `${baseUrl}/images/blog/${post.thumbnail}`
-    : `${baseUrl}/images/og-default.webp`;
+    : `${baseUrl}/images/covers/cover.jpg`;
 
   useEffect(() => {
     if (!post) {
@@ -151,9 +151,7 @@ export default function BlogArticlePage() {
         <h1 className="mb-2 font-heading text-2xl text-stone-800 dark:text-stone-100">
           文章不存在
         </h1>
-        <p className="mb-6 text-sm text-stone-500 dark:text-stone-400">
-          你找的文章不存在。
-        </p>
+        <p className="mb-6 text-sm text-stone-500 dark:text-stone-400">你找的文章不存在。</p>
         <Link
           to="/blogs"
           className="text-sm text-accent underline-offset-4 transition-colors hover:underline"
@@ -170,10 +168,7 @@ export default function BlogArticlePage() {
       <Helmet>
         <title>{post ? `${post.title} | ${siteName}` : `Blogs | ${siteName}`}</title>
 
-        <meta
-          name="description"
-          content={post?.description ?? "技术文章、深度分享与开发随笔。"}
-        />
+        <meta name="description" content={post?.description ?? "技术文章、深度分享与开发随笔。"} />
 
         <meta name="author" content={post?.author ?? "Shtskysmile"} />
         <meta name="keywords" content={post?.tags?.join(", ") ?? "博客, 编程, 技术"} />
@@ -269,17 +264,19 @@ export default function BlogArticlePage() {
             </div>
 
             {/* Thumbnail */}
-            <img
-              src={`/images/blog/${post.thumbnail}`}
-              alt={post.title}
-              width={800}
-              height={400}
-              className="mb-8 w-full rounded-xl object-cover shadow-sm"
-            />
+            {post.thumbnail && (
+              <img
+                src={`/images/blog/${post.thumbnail}`}
+                alt={post.title}
+                width={800}
+                height={400}
+                className="mb-8 w-full rounded-xl object-cover shadow-sm"
+              />
+            )}
 
             {/* Article content */}
             <article className="prose prose-stone max-w-none dark:prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={articleComponents}>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkNote]} components={articleComponents}>
                 {markdown ?? ""}
               </ReactMarkdown>
             </article>

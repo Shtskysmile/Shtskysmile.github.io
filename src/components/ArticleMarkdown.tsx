@@ -1,13 +1,70 @@
 import type { ReactNode } from "react";
 import type { Components } from "react-markdown";
-import { ExternalLink as ExternalLinkIcon } from "lucide-react";
+import type { Blockquote, Root, RootContent } from "mdast";
+import { ExternalLink as ExternalLinkIcon, Info } from "lucide-react";
 import CodeBlock from "@/components/CodeBlock";
 
 /**
  * Custom react-markdown component overrides for article pages.
  * - Code blocks: syntax highlighting, line numbers, copy button
+ * - Blockquotes: `> [!NOTE] 标题` renders as a callout box
  * - Links: external icon for http(s) links, styled with accent color
  */
+
+/**
+ * `> [!NOTE] 标题` 必须单独占一段，正文从下一段开始（中间留空行）：
+ *
+ *     > [!NOTE] 作者的话
+ *     >
+ *     > 正文……
+ *
+ * 判定放在 mdast 层：到 hast 阶段，每个块级子节点之间会被插进 "\n" 文本节点，
+ * 那时按索引找段落已经不可靠了。这里把标记行整段摘掉，标题挂到 data-note。
+ * 首段若不是「单行纯文本且以 [!NOTE] 开头」，原样留作普通引用块——漏写空行只会
+ * 显示成普通引用，而不会把正文误当成标题吞掉。
+ */
+const NOTE_MARKER = /^\[!NOTE\][ \t]*([^\n]*)$/;
+
+function takeNoteMarker(node: Blockquote): string | null {
+  const first = node.children[0];
+  const text =
+    first?.type === "paragraph" && first.children.length === 1 ? first.children[0] : undefined;
+  const match = text?.type === "text" ? NOTE_MARKER.exec(text.value) : null;
+  if (!match) return null;
+
+  node.children.shift();
+  return match[1]?.trim() || "注意";
+}
+
+function visit(node: Root | RootContent): void {
+  if (node.type === "blockquote") {
+    const title = takeNoteMarker(node);
+    if (title) node.data = { ...node.data, hProperties: { "data-note": title } };
+  }
+  if ("children" in node) {
+    for (const child of node.children) visit(child);
+  }
+}
+
+/** remark 插件：把 `> [!NOTE] 标题` 变成带 data-note 的引用块 */
+export function remarkNote() {
+  return (tree: Root) => visit(tree);
+}
+
+function NoteBox({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="my-6 rounded-lg border border-blue-200 bg-blue-50/70 px-4 py-3 dark:border-blue-900/60 dark:bg-blue-950/30">
+      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-300">
+        <Info size={14} className="shrink-0" />
+        {title}
+      </p>
+      <div className="text-stone-700 dark:text-stone-300 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export const articleComponents: Components = {
   table: ({ children }) => (
     <div className="my-6 w-full overflow-x-auto">
@@ -17,9 +74,12 @@ export const articleComponents: Components = {
   th: ({ children }) => <th className="break-words border px-3 py-2 text-left">{children}</th>,
   td: ({ children }) => <td className="break-words border px-3 py-2 align-top">{children}</td>,
   code({ className, children, ...props }) {
-    // Fenced code block: has a className like "language-python"
+    // Fenced block: has a className like "language-python". An unlabelled fence
+    // has no className at all, so fall back to the content — a fence's text
+    // always ends with a newline, and inline code never spans lines.
     const match = /language-(\w+)/.exec(className || "");
-    const isInline = !match && !className;
+    const text = String(children);
+    const isInline = !match && !text.includes("\n");
 
     if (isInline) {
       return (
@@ -32,7 +92,15 @@ export const articleComponents: Components = {
       );
     }
 
-    return <CodeBlock language={match?.[1]}>{String(children).replace(/\n$/, "")}</CodeBlock>;
+    return <CodeBlock language={match?.[1]}>{text.replace(/\n$/, "")}</CodeBlock>;
+  },
+
+  blockquote({ children, node }) {
+    // 标题由 remarkNote 插件挂在 data-note 上，标记行在 mdast 层就已摘除
+    const title = node?.properties?.["data-note"];
+    if (typeof title === "string") return <NoteBox title={title}>{children}</NoteBox>;
+
+    return <blockquote>{children}</blockquote>;
   },
 
   pre({ children }) {

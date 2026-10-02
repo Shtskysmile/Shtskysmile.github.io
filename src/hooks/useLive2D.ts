@@ -100,7 +100,7 @@ export function useLive2D(): UseLive2DReturn {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const priorityRef = useRef(false);
   const lastHoverRef = useRef<Element | null>(null);
-  const dragRef = useRef({ dragging: false, startX: 0, offsetX: 0 });
+  const dragRef = useRef({ dragging: false, startX: 0, offsetRight: 0 });
   const containerRef = useRef<HTMLElement | null>(null);
 
   // ── showMessage with priority ──────────────────────────────────────
@@ -338,7 +338,7 @@ export function useLive2D(): UseLive2DReturn {
     console.log(re);
   }, [config, isLoaded, showMessage]);
 
-  // ── Drag handlers (x-axis only, snaps back on release) ─────────────
+  // ── Drag handlers (x-axis only, snaps back to the right edge) ───────
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     const container = (e.currentTarget as HTMLElement).closest(".waifu-container");
     if (!container) return;
@@ -348,7 +348,7 @@ export function useLive2D(): UseLive2DReturn {
     dragRef.current = {
       dragging: true,
       startX: e.clientX,
-      offsetX: rect.left,
+      offsetRight: window.innerWidth - rect.right,
     };
 
     (container as HTMLElement).style.transition = "none";
@@ -356,9 +356,8 @@ export function useLive2D(): UseLive2DReturn {
     const onPointerMove = (ev: PointerEvent) => {
       if (!dragRef.current.dragging || !containerRef.current) return;
       const dx = ev.clientX - dragRef.current.startX;
-      const newLeft = dragRef.current.offsetX + dx;
-      containerRef.current.style.left = `${newLeft}px`;
-      containerRef.current.style.right = "auto";
+      containerRef.current.style.right = `${dragRef.current.offsetRight - dx}px`;
+      containerRef.current.style.left = "auto";
     };
 
     const onPointerUp = () => {
@@ -367,9 +366,9 @@ export function useLive2D(): UseLive2DReturn {
       document.removeEventListener("pointerup", onPointerUp);
 
       if (containerRef.current) {
-        containerRef.current.style.transition = "left 0.4s ease";
-        containerRef.current.style.left = "0px";
-        containerRef.current.style.right = "auto";
+        containerRef.current.style.transition = "right 0.4s ease";
+        containerRef.current.style.right = "0px";
+        containerRef.current.style.left = "auto";
       }
     };
 

@@ -47,10 +47,10 @@ export default function Live2DWidget() {
 
   return (
     <div
-      className="waifu-container fixed bottom-0 left-0 z-30 select-none"
+      className="waifu-container fixed bottom-0 right-0 z-30 select-none"
       style={{
         touchAction: "none",
-        transformOrigin: "bottom left",
+        transformOrigin: "bottom right",
         transform: isMobile ? `scale(${MOBILE_SCALE})` : undefined,
       }}
     >
@@ -62,7 +62,7 @@ export default function Live2DWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={prefersReduced ? { duration: 0 } : { duration: 0.2 }}
-            className="absolute -top-2 left-3 z-40 max-w-[220px] -translate-y-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-700 shadow-md dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
+            className="absolute -top-2 right-3 z-40 max-w-[220px] -translate-y-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-700 shadow-md dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
           >
             {message}
           </motion.div>

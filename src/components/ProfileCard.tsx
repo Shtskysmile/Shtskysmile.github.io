@@ -2,7 +2,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Send, Twitter, Youtube } from "lucide-react";
+import { Github, Mail, Send, Twitter, Youtube } from "lucide-react";
 import Card from "@/components/ui/Card";
 import SocialButton from "@/components/ui/SocialButton";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -11,6 +11,7 @@ import profileMd from "@content/profile.md?raw";
 
 const ICON_MAP: Record<string, typeof Github> = {
   GitHub: Github,
+  Email: Mail,
   Telegram: Send,
   X: Twitter,
   YouTube: Youtube,

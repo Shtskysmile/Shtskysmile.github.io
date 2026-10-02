@@ -166,7 +166,9 @@ for (const post of posts) {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 
   const articleUrl = `${BASE_URL}/blogs/${slug}`;
-  const imageUrl = `${BASE_URL}/images/blog/${post.thumbnail}`;
+  const imageUrl = post.thumbnail
+    ? `${BASE_URL}/images/blog/${post.thumbnail}`
+    : `${BASE_URL}/images/covers/cover.jpg`;
 
   const tagsMeta = (post.tags || [])
     .map((tag) => `<meta property="article:tag" content="${esc(tag)}" />`)

@@ -8,20 +8,22 @@ import BackToTop from "@/components/BackToTop";
 import Skeleton from "@/components/ui/Skeleton";
 import { useLenis } from "@/hooks/useLenis";
 
-const ProjectList = lazy(() => import("@/components/ProjectList"));
+// 项目板块暂时隐藏，需要时取消下面这行注释
+// const ProjectList = lazy(() => import("@/components/ProjectList"));
 const BlogList = lazy(() => import("@/components/BlogList"));
 const Live2DWidget = lazy(() => import("@/components/Live2DWidget"));
 
-function ProjectListFallback() {
-  return (
-    <div className="flex flex-col gap-4">
-      <Skeleton className="h-8 w-48" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-32 w-full" />
-      ))}
-    </div>
-  );
-}
+// 项目板块暂时隐藏，需要时取消整段注释
+// function ProjectListFallback() {
+//   return (
+//     <div className="flex flex-col gap-4">
+//       <Skeleton className="h-8 w-48" />
+//       {Array.from({ length: 3 }).map((_, i) => (
+//         <Skeleton key={i} className="h-32 w-full" />
+//       ))}
+//     </div>
+//   );
+// }
 
 function BlogListFallback() {
   return (
@@ -83,9 +85,11 @@ export default function HomePage() {
         right={
           <>
             <SkillsSection />
+            {/* 项目板块暂时隐藏，需要时取消注释
             <Suspense fallback={<ProjectListFallback />}>
               <ProjectList />
             </Suspense>
+            */}
             <Suspense fallback={<BlogListFallback />}>
               <BlogList />
             </Suspense>

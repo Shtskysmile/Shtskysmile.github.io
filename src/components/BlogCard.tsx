@@ -21,19 +21,21 @@ export default function BlogCard({ post, index, markdown }: BlogCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={prefersReduced ? { duration: 0 } : { duration: 0.35, delay: index * 0.08 }}
-      className="overflow-hidden rounded-xl border border-stone-200 bg-surface-card-light p-4 shadow-sm transition-shadow hover:shadow-md dark:border-stone-700 dark:bg-surface-card-dark article-card"
+      className="article-card overflow-hidden rounded-xl border border-stone-200 bg-surface-card-light p-4 shadow-sm transition-shadow hover:shadow-md dark:border-stone-700 dark:bg-surface-card-dark"
       data-live2d-hover="article-card"
     >
       <div className="flex items-start gap-4">
         {/* Thumbnail */}
-        <img
-          src={`/images/blog/${post.thumbnail}`}
-          alt={post.title}
-          width={160}
-          height={80}
-          loading="lazy"
-          className="hidden h-20 w-40 shrink-0 rounded-lg object-cover sm:block"
-        />
+        {post.thumbnail && (
+          <img
+            src={`/images/blog/${post.thumbnail}`}
+            alt={post.title}
+            width={160}
+            height={80}
+            loading="lazy"
+            className="hidden h-20 w-40 shrink-0 rounded-lg object-cover sm:block"
+          />
+        )}
 
         {/* Metadata */}
         <div className="min-w-0 flex-1">
@@ -67,8 +69,6 @@ export default function BlogCard({ post, index, markdown }: BlogCardProps) {
               作者：{post.author}
             </span>
           </div>
-
-
         </div>
       </div>
     </motion.article>

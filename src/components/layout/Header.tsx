@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { SCHOOL_EMBLEMS } from "@/lib/constants";
 
 /** Minimum downward scroll (px) before hiding. Upward scroll shows immediately. */
 const HIDE_DELTA = 10;
@@ -71,13 +72,32 @@ export default function Header() {
       }`}
     >
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-        <a
-          href="/"
-          className="flex items-center gap-3 text-stone-800 transition-colors hover:text-accent dark:text-stone-200"
-          aria-label="首页"
-        >
-          <Logo />
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href="/"
+            className="flex items-center text-stone-800 transition-colors hover:text-accent dark:text-stone-200"
+            aria-label="首页"
+          >
+            <Logo />
+          </a>
+          <div className="flex items-center gap-2">
+            {SCHOOL_EMBLEMS.map(({ name, src }) => (
+              <span
+                key={name}
+                title={name}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white p-[3px]"
+              >
+                <img
+                  src={src}
+                  alt={`${name}校徽`}
+                  width={22}
+                  height={22}
+                  className="h-full w-full"
+                />
+              </span>
+            ))}
+          </div>
+        </div>
         <ThemeToggle />
       </div>
     </header>

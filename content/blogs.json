@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "title": "大语言模型面试复习资料",
+    "description": "覆盖 Transformer、KV Cache、RoPE、预训练与后训练、工具调用、RAG、Agent、多模态等 14 章。既可用作系统复习，也可只看结论速通。",
+    "tags": ["LLM", "面试", "Transformer", "RAG", "Agent"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-02",
+    "blogUrl": "llm-interview-review.md",
+    "highlight": true
+  }
+]
