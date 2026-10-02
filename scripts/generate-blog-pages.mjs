@@ -159,6 +159,25 @@ function buildPage({ title, description, url, image, type, extra }) {
   console.log("  created: dist/blogs/index.html");
 }
 
+// ── Generate gacha page ─────────────────────────────────────────────
+// 内容是随机插画、没法预渲染，但需要这个静态壳，否则直接访问 /gacha
+// 会返回 404 状态码（SPA 的 404 兜底能显示页面，但状态码是错的）。
+{
+  const dir = resolve(DIST, "gacha");
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+  const html = buildPage({
+    title: `抽卡 | ${SITE_NAME}`,
+    description: "随机抽一张二次元插画，附画师与原画链接。",
+    url: `${BASE_URL}/gacha`,
+    image: COVER_IMAGE,
+    type: "website",
+  });
+
+  writeFileSync(resolve(dir, "index.html"), html, "utf-8");
+  console.log("  created: dist/gacha/index.html");
+}
+
 // ── Generate category pages ─────────────────────────────────────────
 // 分类表和 src/lib/constants.ts 里的 BLOG_CATEGORIES 是一份数据的两个副本，
 // 改了那边记得同步这里（与 SITE_NAME / BASE_URL 同类的重复）。
