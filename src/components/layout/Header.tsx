@@ -80,8 +80,8 @@ export default function Header() {
         hidden ? "-translate-y-full" : "translate-y-0"
       }`}
     >
-      <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4 px-4 py-3 sm:px-6">
+        <div className="flex shrink-0 items-center gap-3">
           <a
             href="/"
             className="flex items-center text-stone-800 transition-colors hover:text-accent dark:text-stone-200"
@@ -107,29 +107,29 @@ export default function Header() {
             ))}
           </div>
         </div>
-        <ThemeToggle />
-      </div>
 
-      {/* 分类导航：放在顶栏里，任何页面都能看到 */}
-      <nav
-        aria-label="文章分类"
-        className="border-t border-stone-200/70 px-4 pb-2 dark:border-stone-800/70 sm:px-6"
-      >
-        <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-          <li>
-            <NavLink to="/blogs" end className={categoryLinkClass}>
-              全部文章
-            </NavLink>
-          </li>
-          {BLOG_CATEGORIES.map((category) => (
-            <li key={category.id}>
-              <NavLink to={`/categories/${category.id}`} className={categoryLinkClass}>
-                {category.name}
+        {/* 分类导航：和站名同一行，窄屏放不下就隐藏（分类仍可从 /blogs 进入） */}
+        <nav aria-label="文章分类" className="hidden min-w-0 flex-1 md:block">
+          <ul className="flex items-center gap-x-4 text-sm">
+            <li>
+              <NavLink to="/blogs" end className={categoryLinkClass}>
+                全部文章
               </NavLink>
             </li>
-          ))}
-        </ul>
-      </nav>
+            {BLOG_CATEGORIES.map((category) => (
+              <li key={category.id}>
+                <NavLink to={`/categories/${category.id}`} className={categoryLinkClass}>
+                  {category.name}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="ml-auto shrink-0">
+          <ThemeToggle />
+        </div>
+      </div>
     </header>
   );
 }

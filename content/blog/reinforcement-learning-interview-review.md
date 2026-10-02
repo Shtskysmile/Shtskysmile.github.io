@@ -30,15 +30,15 @@
 
 MDP 是强化学习的数学建模框架，五元组：
 
-```
-MDP = (S, A, P, R, γ)
+$$
+\text{MDP} = (S, A, P, R, \gamma)
+$$
 
-S：状态集合（State）        —— 当前环境情况
-A：动作集合（Action）       —— 智能体可采取的决策
-P：状态转移概率 P(s'|s,a)   —— 执行动作后环境如何变化
-R：奖励函数 R(s,a,s')      —— 这一步做得好不好
-γ：折扣因子 γ ∈ [0,1]      —— 未来奖励在当前决策中的重要程度
-```
+- $S$：状态集合（State）—— 当前环境情况
+- $A$：动作集合（Action）—— 智能体可采取的决策
+- $P$：状态转移概率 $P(s' \mid s, a)$ —— 执行动作后环境如何变化
+- $R$：奖励函数 $R(s, a, s')$ —— 这一步做得好不好
+- $\gamma$：折扣因子 $\gamma \in [0, 1]$ —— 未来奖励在当前决策中的重要程度
 
 **马尔可夫性质（无记忆性）**：下一状态只依赖当前状态和动作，与更早的历史无关：
 `P(s_{t+1} | s_t, a_t, s_{t-1}, a_{t-1}, ...) = P(s_{t+1} | s_t, a_t)`
@@ -114,19 +114,25 @@ Trajectory（轨迹）：状态-动作-奖励序列
 
 描述"当前价值 = 当前奖励 + 下一状态价值"的递归关系：
 
-```
-V^π(s) = E_π[ r_{t+1} + γ·V^π(s_{t+1}) | s_t = s ]
-Q^π(s,a) = E_π[ r_{t+1} + γ·Σ_{a'} π(a'|s') Q^π(s',a') | s_t = s, a_t = a ]
-```
+$$
+V^{\pi}(s) = \mathbb{E}_{\pi}\left[r_{t+1} + \gamma V^{\pi}(s_{t+1}) \mid s_t = s\right]
+$$
+
+$$
+Q^{\pi}(s, a) = \mathbb{E}_{\pi}\left[r_{t+1} + \gamma \sum_{a'} \pi(a' \mid s')\, Q^{\pi}(s', a') \mid s_t = s,\, a_t = a\right]
+$$
 
 **为什么重要**：它把"长期回报"拆成了"当前奖励 + 下一时刻价值"的**局部可迭代形式**——这是所有价值类 RL 算法（TD、Q-learning、DQN）能工作的数学基础。
 
 ### 2.2 贝尔曼最优方程
 
-```
-V*(s) = max_a E[ r + γ·V*(s') ]
-Q*(s,a) = E[ r + γ·max_{a'} Q*(s',a') ]
-```
+$$
+V^{*}(s) = \max_a \mathbb{E}\left[r + \gamma V^{*}(s')\right]
+$$
+
+$$
+Q^{*}(s, a) = \mathbb{E}\left[r + \gamma \max_{a'} Q^{*}(s', a')\right]
+$$
 
 最优策略：每步取 `argmax_a Q*(s,a)`。
 
@@ -164,9 +170,9 @@ TD 的核心：`V(s) ← V(s) + α·[r + γV(s') − V(s)]`，方括号里叫 **
 
 ### 3.2 Q-learning（off-policy 的经典）
 
-```
-Q(s,a) ← Q(s,a) + α·[ r + γ·max_{a'} Q(s',a') − Q(s,a) ]
-```
+$$
+Q(s, a) \leftarrow Q(s, a) + \alpha\left[r + \gamma \max_{a'} Q(s', a') - Q(s, a)\right]
+$$
 
 - 更新目标用**贪心** max：学的是"最优策略下的价值"
 - 行为上可以用 ε-greedy 等探索策略收集数据
@@ -174,9 +180,11 @@ Q(s,a) ← Q(s,a) + α·[ r + γ·max_{a'} Q(s',a') − Q(s,a) ]
 
 ### 3.3 SARSA（on-policy 的经典）
 
-```
-Q(s,a) ← Q(s,a) + α·[ r + γ·Q(s',a') − Q(s,a) ]   （a' 是实际采取的动作）
-```
+$$
+Q(s, a) \leftarrow Q(s, a) + \alpha\left[r + \gamma Q(s', a') - Q(s, a)\right]
+$$
+
+这里的 $a'$ 是实际采取的动作。
 
 - 更新目标用**实际采取的动作** a'：学的是"当前行为策略下的价值"
 - 更保守：会把探索的代价也学进 Q 值里
@@ -211,9 +219,9 @@ DQN = 用神经网络拟合 Q 函数（解决状态空间大/连续的问题）�
 
 直接参数化策略 π_θ(a|s)，用梯度上升最大化期望回报：
 
-```
-∇J(θ) = E[ ∇_θ log π_θ(a|s) · G_t ]
-```
+$$
+\nabla J(\theta) = \mathbb{E}\left[\nabla_\theta \log \pi_\theta(a \mid s) \cdot G_t\right]
+$$
 
 直觉：**回报高的轨迹上的动作 → 提高其概率；回报低的 → 降低**。
 
@@ -262,11 +270,15 @@ Critic（评论家）= 价值网络 V_φ(s)    → 负责"评估"（估计好坏
 
 利用**重要性采样**，可以用旧策略 π_old 采样的数据更新新策略 π_θ（on-policy 也能复用一批数据）：
 
-```
-r_t(θ) = π_θ(a_t|s_t) / π_old(a_t|s_t)     （新旧策略概率比）
+$$
+r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\text{old}}(a_t \mid s_t)}
+$$
 
-L_clip = E[ min( r_t(θ)·A_t,  clip(r_t(θ), 1−ε, 1+ε)·A_t ) ]
-```
+上式是新旧策略的概率比，把它代进 PPO 的裁剪目标：
+
+$$
+L_{\text{clip}} = \mathbb{E}\left[\min\left(r_t(\theta) A_t,\; \operatorname{clip}(r_t(\theta), 1-\varepsilon, 1+\varepsilon) A_t\right)\right]
+$$
 
 - 当 A_t > 0（这个动作好）：鼓励提高概率，但最多提高 (1+ε) 倍，防止一步走飞
 - 当 A_t < 0（动作差）：限制降低幅度
@@ -278,12 +290,15 @@ L_clip = E[ min( r_t(θ)·A_t,  clip(r_t(θ), 1−ε, 1+ε)·A_t ) ]
 
 advantage 怎么算？用 **GAE** 平衡偏差与方差：
 
-```
-δ_t = r_t + γ·V(s_{t+1}) − V(s_t)          （TD error）
-A_t = δ_t + γλ·δ_{t+1} + (γλ)²·δ_{t+2} + ...   （多步 TD 的加权和）
+$$
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
 
-λ=0 → 单步 TD（低方差高偏差）；λ→1 → 接近 MC（高方差低偏差）
-```
+$$
+A_t = \delta_t + \gamma\lambda\, \delta_{t+1} + (\gamma\lambda)^2 \delta_{t+2} + \cdots
+$$
+
+前式是 TD error，后式是多步 TD 的加权和。$\lambda = 0$ 退化成单步 TD（低方差、高偏差），$\lambda \to 1$ 则接近蒙特卡洛（高方差、低偏差）。
 
 ### 5.4 为什么 PPO 在大模型对齐和连续控制里这么常见
 
@@ -473,15 +488,18 @@ A_t = δ_t + γλ·δ_{t+1} + (γλ)²·δ_{t+2} + ...   （多步 TD 的加权�
 
 RLHF 的最优策略有**闭式解**：
 
-```
-π*(y|x) ∝ π_ref(y|x) · exp( r(x,y) / β )
-```
+$$
+\pi^{*}(y \mid x) \;\propto\; \pi_{\text{ref}}(y \mid x) \exp\!\left(\frac{r(x, y)}{\beta}\right)
+$$
 
 把它代回 Bradley-Terry 偏好概率，**奖励模型 r 可以被消掉**——偏好信息直接定义了策略的优化目标：
 
-```
-L_DPO = −log σ( β·log(π_θ(y_w)/π_ref(y_w)) − β·log(π_θ(y_l)/π_ref(y_l)) )
-```
+$$
+\mathcal{L}_{\text{DPO}} = -\log \sigma\!\left(
+\beta \log \frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}
+- \beta \log \frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}
+\right)
+$$
 
 直觉（一句话）：**让"被人类选中的回答 y_w 的概率相对参考模型提升"，让"被拒绝的回答 y_l 的相对概率下降"。**
 

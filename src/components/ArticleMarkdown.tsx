@@ -3,6 +3,8 @@ import type { Components } from "react-markdown";
 import type { Blockquote, Root, RootContent } from "mdast";
 import { ExternalLink as ExternalLinkIcon, Info } from "lucide-react";
 import CodeBlock from "@/components/CodeBlock";
+// KaTeX 的样式与字体只随文章页的 chunk 加载，首页不受影响
+import "katex/dist/katex.min.css";
 
 /**
  * Custom react-markdown component overrides for article pages.

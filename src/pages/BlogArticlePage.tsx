@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import Skeleton from "@/components/ui/Skeleton";
 import BackToTop from "@/components/BackToTop";
 import { articleComponents, remarkNote } from "@/components/ArticleMarkdown";
@@ -294,7 +296,8 @@ export default function BlogArticlePage() {
                   className="prose prose-stone max-w-none dark:prose-invert"
                 >
                   <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkNote]}
+                    remarkPlugins={[remarkGfm, remarkNote, remarkMath]}
+                    rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }]]}
                     components={articleComponents}
                   >
                     {markdown ?? ""}

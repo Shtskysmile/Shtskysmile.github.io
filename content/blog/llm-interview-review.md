@@ -60,9 +60,9 @@ Input → Masked Self-Attention → Add & Norm → Cross-Attention → Add & Nor
 
 ### 1.5 Self-Attention 核心公式
 
-```
-Attention(Q, K, V) = softmax(QK^T / √d_k) × V
-```
+$$
+\operatorname{Attention}(Q, K, V) = \operatorname{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right) V
+$$
 
 - **Q（Query）**：当前 token 在"查什么信息"
 - **K（Key）**：每个 token "身上有什么标签供别人查找"
@@ -73,11 +73,13 @@ Attention(Q, K, V) = softmax(QK^T / √d_k) × V
 
 一个注意力头只能捕获一种关系模式。多头注意力并行跑多个头，每个头在不同子空间学习不同的关系：
 
-```
-MultiHead(Q, K, V) = Concat(head_1, ..., head_h) × W^O
+$$
+\operatorname{MultiHead}(Q, K, V) = \operatorname{Concat}(\text{head}_1, \dots, \text{head}_h)\, W^O
+$$
 
-head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)
-```
+$$
+\text{head}_i = \operatorname{Attention}(QW_i^Q,\; KW_i^K,\; VW_i^V)
+$$
 
 例如翻译"bank"：一个头关注上下文判断是"银行"还是"河岸"，另一个头关注语法搭配。
 
@@ -148,9 +150,9 @@ softmax(S) → 读回 → 写回 HBM
 
 ### 2.3 输入表示（三个 Embedding 求和）
 
-```
-Input = Token Embedding + Segment Embedding + Position Embedding
-```
+$$
+\text{Input} = \text{Token Embedding} + \text{Segment Embedding} + \text{Position Embedding}
+$$
 
 - **Token Embedding**: WordPiece 分词，`[CLS]` 开头（聚合整句语义），`[SEP]` 分隔句子
 - **Segment Embedding**: 区分句子 A / 句子 B（用于句对任务）
@@ -258,9 +260,9 @@ t3[g,  h,  i]      t3[g,    h,    i]
 
 最简单的语言建模：**给定上文，预测下一个词**
 
-```
-L = -Σ log P(x_t | x_1, x_2, ..., x_{t-1})
-```
+$$
+L = -\sum_t \log P(x_t \mid x_1, x_2, \dots, x_{t-1})
+$$
 
 不需要 BERT 的 MLM（随机 mask），不需要 NSP，一个目标函数训到底。
 
@@ -484,11 +486,11 @@ decode 是访存瓶颈：每步只算一个 token 却要读一遍整个 KV Cache
 
 对当前 token 的隐藏状态 h_t，先压缩成一个低维"潜向量"，再上投影恢复 K、V：
 
-```
-c_t = W^DKV · h_t            潜向量，d_c << d_model
-k_t = W^UK · c_t             恢复 key
-v_t = W^UV · c_t             恢复 value
-```
+$$
+c_t = W^{DKV} h_t, \qquad k_t = W^{UK} c_t, \qquad v_t = W^{UV} c_t
+$$
+
+其中 $c_t$ 是潜向量（$d_c \ll d_{\text{model}}$），$k_t$、$v_t$ 分别是由它恢复出的 key 和 value。
 
 - **KV Cache 只缓存 c_t**（每 token 每层一份低维向量），不缓存恢复后的 K、V
 - 压缩/恢复都是线性变换，恢复出的 K、V 参与标准注意力，数学上和直接算等价
@@ -497,9 +499,11 @@ v_t = W^UV · c_t             恢复 value
 
 RoPE 要旋 Q、K。如果对从潜向量恢复出的完整 K 加 RoPE，旋转矩阵就"嵌进"了恢复路径，推理时无法做矩阵合并，只能缓存"加过 RoPE 的完整 K"——压缩立刻失效。解法：只对一小份独立的 key 做 RoPE：
 
-```
-k_t^R = RoPE(W^KR · h_t)      独立小份，维度 d^R 很小
-```
+$$
+k_t^{R} = \operatorname{RoPE}\!\left(W^{KR} h_t\right)
+$$
+
+它是独立的一小份，维度 $d^{R}$ 很小。
 
 于是每 token 缓存 = 潜向量 c_t（d_c 维）+ 小份 RoPE key（d^R 维）。
 
@@ -507,10 +511,15 @@ k_t^R = RoPE(W^KR · h_t)      独立小份，维度 d^R 很小
 
 如果推理时每步先从 c_t 恢复出所有 K、V，虽然缓存省了、算力没省。MLA 把恢复矩阵"吸收"进 Q 和输出投影：
 
-```
-qᵀ k = qᵀ(W^UK c) = (W^UKᵀ q)ᵀ c        ← W^UK 吸收进 q，直接和潜向量点积
-output = attn_weights @ (W^UV c)          ← 再吸收进输出投影
-```
+$$
+q^{\top} k = q^{\top}\!\left(W^{UK} c\right) = \left(W^{UK\top} q\right)^{\top} c
+$$
+
+$$
+\text{output} = \text{attn\_weights} \cdot \left(W^{UV} c\right)
+$$
+
+前者让 $W^{UK}$ 吸收进 $q$、直接和潜向量做点积；后者把 $W^{UV}$ 吸收进输出投影。
 
 效果：推理时**既不缓存完整 K、V，也不显式恢复完整 K、V**——显存、算力一起省。
 
@@ -560,25 +569,23 @@ output = attn_weights @ (W^UV c)          ← 再吸收进输出投影
 
 对第 i 对维度 (2i, 2i+1)，频率与 Transformer 正弦编码同款：
 
-```
-ω_i = 1 / 10000^(2i/d)，i = 0, 1, ..., d/2 - 1
-```
+$$
+\omega_i = \frac{1}{10000^{2i/d}}, \qquad i = 0, 1, \dots, \tfrac{d}{2} - 1
+$$
 
 位置 m 的旋转矩阵是块对角矩阵，每个块是二维旋转：
 
-```
-R_i(m) = [ cos(m·ω_i)   -sin(m·ω_i) ]
-         [ sin(m·ω_i)    cos(m·ω_i) ]
+$$
+R_i(m) = \begin{bmatrix} \cos(m\omega_i) & -\sin(m\omega_i) \\ \sin(m\omega_i) & \cos(m\omega_i) \end{bmatrix}
+$$
 
-q_m = R(m)·q      （把位置 m 旋转进 Query）
-k_n = R(n)·k      （把位置 n 旋转进 Key）
-```
+用 $q_m = R(m)q$ 把位置 $m$ 旋转进 Query，用 $k_n = R(n)k$ 把位置 $n$ 旋转进 Key。
 
 **关键恒等式**（面试必答）：
 
-```
-q_mᵀ k_n = (R(m)q)ᵀ(R(n)k) = qᵀ R(m)ᵀ R(n) k = qᵀ R(n−m) k
-```
+$$
+q_m^{\top} k_n = (R(m)q)^{\top}(R(n)k) = q^{\top} R(m)^{\top} R(n) k = q^{\top} R(n-m) k
+$$
 
 推导依赖两条性质：
 
@@ -777,9 +784,9 @@ PPO 循环：π_θ 采样回答 → RM 打分 → critic 提供每步基线 → 
 
 目标函数（简化）：
 
-```
-max E[r(x, y)] - β·KL[π_θ(y|x) || π_ref(y|x)]
-```
+$$
+\max \; \mathbb{E}\left[r(x, y)\right] - \beta \operatorname{KL}\!\left[\pi_\theta(y \mid x) \,\|\, \pi_{\text{ref}}(y \mid x)\right]
+$$
 
 - **为什么需要 KL 约束**：RM 是对人类偏好的有损近似，模型可以"刷分"（reward hacking，比如输出越来越长、越来越谄媚）；KL 把策略钉在参考模型附近，保证语言流畅不退化
 - **为什么 PPO**：on-policy，在线采样，能看到自己当前分布下的样本；比 off-policy 稳定
@@ -791,16 +798,18 @@ KL 散度衡量两个概率分布 P 和 Q 的差异——准确说是"**用 Q �
 
 **公式（离散形式）**：
 
-```
-KL(P || Q) = Σ_x P(x) · log( P(x) / Q(x) )
-           = Σ_x P(x) · [ log P(x) - log Q(x) ]
-```
+$$
+\begin{aligned}
+\operatorname{KL}(P \,\|\, Q) &= \sum_x P(x) \log \frac{P(x)}{Q(x)} \\
+&= \sum_x P(x) \left[\log P(x) - \log Q(x)\right]
+\end{aligned}
+$$
 
 **连续形式**：
 
-```
-KL(P || Q) = ∫ p(x) · log( p(x) / q(x) ) dx
-```
+$$
+\operatorname{KL}(P \,\|\, Q) = \int p(x) \log \frac{p(x)}{q(x)} \, dx
+$$
 
 **为什么要 log 的比值（信息论直觉）**：log(1/P(x)) 是"事件 x 携带的信息量"（单位 nat 或 bit）。如果**错误地**假设真实分布是 Q，那么同一个事件 x 会被编码成 log(1/Q(x)) 个 bit。两者之差 log(1/Q) - log(1/P) = log(P/Q)，就是"因为这个错误假设，每条消息平均多付的 bit 数"。对 x 按 P 加权平均，得到的就是 KL——所以 KL 的直观含义是"**用错误的分布近似真实分布时，平均多付出的编码代价**"。
 
@@ -814,13 +823,19 @@ KL(P || Q) = ∫ p(x) · log( p(x) / q(x) ) dx
 
 设 P = [0.5, 0.5]，Q = [0.9, 0.1]，用自然对数（单位 nat）：
 
-```
-KL(P||Q) = 0.5·log(0.5/0.9) + 0.5·log(0.5/0.1)
-         = 0.5·(-0.588) + 0.5·(1.609) = 0.511
+$$
+\begin{aligned}
+\operatorname{KL}(P \,\|\, Q) &= 0.5\log\frac{0.5}{0.9} + 0.5\log\frac{0.5}{0.1} \\
+&= 0.5 \times (-0.588) + 0.5 \times 1.609 = 0.511
+\end{aligned}
+$$
 
-KL(Q||P) = 0.9·log(0.9/0.5) + 0.1·log(0.1/0.5)
-         = 0.9·(0.588) + 0.1·(-1.609) = 0.368
-```
+$$
+\begin{aligned}
+\operatorname{KL}(Q \,\|\, P) &= 0.9\log\frac{0.9}{0.5} + 0.1\log\frac{0.1}{0.5} \\
+&= 0.9 \times 0.588 + 0.1 \times (-1.609) = 0.368
+\end{aligned}
+$$
 
 两个方向的值不同（0.511 vs 0.368），且都 > 0——不对称性和非负性一眼可见。
 
@@ -828,15 +843,15 @@ KL(Q||P) = 0.9·log(0.9/0.5) + 0.1·log(0.1/0.5)
 
 PPO 目标函数里那一项，展开写是：
 
-```
-KL(π_θ || π_ref) = E_{x~数据, y~π_θ}[ log( π_θ(y|x) / π_ref(y|x) ) ]
-```
+$$
+\operatorname{KL}(\pi_\theta \,\|\, \pi_{\text{ref}}) = \mathbb{E}_{x \sim \text{data},\; y \sim \pi_\theta}\left[\log \frac{\pi_\theta(y \mid x)}{\pi_{\text{ref}}(y \mid x)}\right]
+$$
 
 逐 token 计算（token 级别平均）：
 
-```
-KL ≈ (1/T) · Σ_t log( π_θ(y_t | x, y_<t) / π_ref(y_t | x, y_<t) )
-```
+$$
+\operatorname{KL} \approx \frac{1}{T} \sum_t \log \frac{\pi_\theta(y_t \mid x, y_{<t})}{\pi_{\text{ref}}(y_t \mid x, y_{<t})}
+$$
 
 注意期望是对**当前策略 π_θ 采样**的——每个 token 都把"新策略给出这个 token 的概率"和"参考模型给出这个 token 的概率"取对数比、求和。策略每偏离参考模型一点，就付一点代价。β 是惩罚强度超参。
 
@@ -850,38 +865,42 @@ KL ≈ (1/T) · Σ_t log( π_θ(y_t | x, y_<t) / π_ref(y_t | x, y_<t) )
 
 **目标**：最大化期望奖励
 
-```
-J(θ) = E_{y~π_θ}[ r(x, y) ] = ∫ π_θ(y|x) · r(x,y) dy
-```
+$$
+J(\theta) = \mathbb{E}_{y \sim \pi_\theta}\left[r(x, y)\right] = \int \pi_\theta(y \mid x)\, r(x, y) \, dy
+$$
 
 **第 1 步：梯度搬进积分**
 
-```
-∇J(θ) = ∫ ∇π_θ(y|x) · r(x,y) dy
-```
+$$
+\nabla J(\theta) = \int \nabla \pi_\theta(y \mid x)\, r(x, y) \, dy
+$$
 
 为什么合法：r(x,y) 是 RM 打分，**不含 θ**（梯度为 0 不动）；积分限是对 y 积分，也不含 θ。
 
 **第 2 步：log 导数技巧（链式法则移项）**
 
-```
-∇log π_θ(y|x) = ∇π_θ(y|x) / π_θ(y|x)   ⇒   ∇π_θ(y|x) = π_θ(y|x) · ∇log π_θ(y|x)
-```
+$$
+\nabla \log \pi_\theta(y \mid x) = \frac{\nabla \pi_\theta(y \mid x)}{\pi_\theta(y \mid x)}
+\quad \Longrightarrow \quad
+\nabla \pi_\theta(y \mid x) = \pi_\theta(y \mid x)\, \nabla \log \pi_\theta(y \mid x)
+$$
 
 代入：
 
-```
-∇J(θ) = ∫ π_θ(y|x) · [∇log π_θ(y|x)] · r(x,y) dy
-```
+$$
+\nabla J(\theta) = \int \pi_\theta(y \mid x) \left[\nabla \log \pi_\theta(y \mid x)\right] r(x, y) \, dy
+$$
 
 **第 3 步：认出期望，转为采样**
 
 这个积分是"函数 `∇log π_θ·r` 在分布 π_θ 下的期望"的标准形式：
 
-```
-∇J(θ) = E_{y~π_θ}[ ∇log π_θ(y|x) · r(x,y) ]
-        ≈ (1/N) · Σ_i ∇log π_θ(y_i|x) · r(x,y_i)      ← 蒙特卡洛采样
-```
+$$
+\nabla J(\theta) = \mathbb{E}_{y \sim \pi_\theta}\left[\nabla \log \pi_\theta(y \mid x)\, r(x, y)\right]
+\;\approx\; \frac{1}{N} \sum_i \nabla \log \pi_\theta(y_i \mid x)\, r(x, y_i)
+$$
+
+最后一步是蒙特卡洛采样。
 
 `∇log π_θ(y_i|x)` 恰好是反向传播能直接算的量（模型输出 log 概率对参数的梯度），所以"梯度"从不可采样的神秘量变成了可采样的量。
 
@@ -889,15 +908,21 @@ J(θ) = E_{y~π_θ}[ r(x, y) ] = ∫ π_θ(y|x) · r(x,y) dy
 
 `∫ ∇π_θ(y)·r(y) dy` **不是期望形式**——被积函数里没有密度权重 π_θ 站在乘法的位置上（∇π 是密度的梯度，密度"藏在导数里面"）。直接采样 y~π_θ 求平均，估计量的期望会带出一个多余的 π_θ(y)：
 
-```
-E_{y~π_θ}[∇π_θ(y)·r(y)] = ∫ ∇π_θ(y)·r(y)·π_θ(y) dy ≠ ∫ ∇π_θ(y)·r(y) dy     ← 有偏
-```
+$$
+\mathbb{E}_{y \sim \pi_\theta}\left[\nabla \pi_\theta(y)\, r(y)\right]
+= \int \nabla \pi_\theta(y)\, r(y)\, \pi_\theta(y) \, dy
+\;\neq\;
+\int \nabla \pi_\theta(y)\, r(y) \, dy
+$$
+
+两者不相等，所以这样估计是有偏的。
 
 用**重要性采样**修：任意积分都能改写成期望 `∫ g(y)dy = ∫ [g(y)/q(y)]·q(y)dy = E_{y~q}[g(y)/q(y)]`。取 q=π_θ、g=∇π·r：
 
-```
-∇J = E_{y~π_θ}[ ∇π_θ(y)·r(y) / π_θ(y) ] = E_{y~π_θ}[ r(y) · ∇log π_θ(y) ]
-```
+$$
+\nabla J = \mathbb{E}_{y \sim \pi_\theta}\left[\frac{\nabla \pi_\theta(y)\, r(y)}{\pi_\theta(y)}\right]
+= \mathbb{E}_{y \sim \pi_\theta}\left[r(y)\, \nabla \log \pi_\theta(y)\right]
+$$
 
 "除以密度"这步**自动导出了 log**——所以 log 导数技巧不是拍脑袋的 trick，而是"采样后除以密度"的必然结果。工程上还必须用 log 形式：连续空间的密度（归一化常数）不可解，而 ∇logπ 直接来自策略网络、数值也更稳定。
 
@@ -905,9 +930,11 @@ E_{y~π_θ}[∇π_θ(y)·r(y)] = ∫ ∇π_θ(y)·r(y)·π_θ(y) dy ≠ ∫ ∇�
 
 奖励全为正（RM 打分 0~5）时，所有样本概率都会上升，只是好样本升得多，梯度方差大。减去基线 b（"这个 prompt 大概得多少分"的估计）：
 
-```
-A(x,y) = r(x,y) - b      ⇒   ∇J ≈ (1/N) Σ ∇log π_θ(y_i)·A(x,y_i)
-```
+$$
+A(x, y) = r(x, y) - b
+\quad \Longrightarrow \quad
+\nabla J \approx \frac{1}{N} \sum_i \nabla \log \pi_\theta(y_i)\, A(x, y_i)
+$$
 
 A>0 的样本概率升、A<0 的样本概率降——正负分明，方差大降。**基线 b 从哪来，就是 PPO（critic）与 GRPO（组内均值）的分水岭**。
 
@@ -937,33 +964,42 @@ for 每次迭代:
 
 设模型生成了一条 4-token 的回答，γ=0.9，λ=0.95（GAE），RM 在回答末尾一次性给奖励 1.0：
 
-```
-s0 --t1--> s1 --t2--> s2 --t3--> s3 --t4--> s4（结束）
-r1=0        r2=0        r3=0        r4=1.0
-```
+$$
+s_0 \xrightarrow{t_1} s_1 \xrightarrow{t_2} s_2 \xrightarrow{t_3} s_3 \xrightarrow{t_4} s_4
+$$
+
+其中 $r_1 = r_2 = r_3 = 0$，$r_4 = 1.0$（$s_4$ 是终止态）。
 
 critic 当前的预测（每步基线）：
 
-```
-V(s0)=0.5  V(s1)=0.6  V(s2)=0.7  V(s3)=0.8  V(s4)=0（终止态）
-```
+$$
+V(s_0) = 0.5,\quad V(s_1) = 0.6,\quad V(s_2) = 0.7,\quad V(s_3) = 0.8,\quad V(s_4) = 0
+$$
+
+$s_4$ 是终止态。
 
 **第 1 步：算 TD 误差** `δ_t = r_{t+1} + γ·V(s_{t+1}) - V(s_t)`：
 
-```
-δ1 = 0 + 0.9×0.7 - 0.6 = 0.03
-δ2 = 0 + 0.9×0.8 - 0.7 = 0.02
-δ3 = 1.0 + 0.9×0   - 0.8 = 0.20
-```
+$$
+\begin{aligned}
+\delta_1 &= 0 + 0.9 \times 0.7 - 0.6 = 0.03 \\
+\delta_2 &= 0 + 0.9 \times 0.8 - 0.7 = 0.02 \\
+\delta_3 &= 1.0 + 0.9 \times 0 - 0.8 = 0.20
+\end{aligned}
+$$
 
 **第 2 步：算 GAE advantage** `A_t = δ_t + γλ·δ_{t+1} + (γλ)²·δ_{t+2} + ...`，γλ = 0.9×0.95 = 0.855：
 
-```
-A1 = 0.03 + 0.855×0.02 + 0.855²×0.20 = 0.03 + 0.017 + 0.146 = 0.193
-A2 = 0.02 + 0.855×0.20 = 0.191
-A3 = 0.20
-A4 = 0（终止态）
-```
+$$
+\begin{aligned}
+A_1 &= 0.03 + 0.855 \times 0.02 + 0.855^2 \times 0.20 = 0.03 + 0.017 + 0.146 = 0.193 \\
+A_2 &= 0.02 + 0.855 \times 0.20 = 0.191 \\
+A_3 &= 0.20 \\
+A_4 &= 0
+\end{aligned}
+$$
+
+$A_4$ 对应终止态。
 
 （注意 λ 的取舍：λ→1 时 GAE 看完整轨迹、偏差小方差大；λ→0 时只看当前步、方差小偏差大。λ=0.95 是常用折中。）
 
@@ -978,14 +1014,20 @@ A4 = 0（终止态）
 
 **第 4 步：更新 critic**。用每个状态的实际累计回报 G_t 做回归：
 
-```
-G1 = 0 + 0.9×0 + 0.9²×1.0 = 0.81
-G2 = 0 + 0.9×1.0 = 0.90
-G3 = 1.0
-G4 = 0（终止态）
+$$
+\begin{aligned}
+G_1 &= 0 + 0.9 \times 0 + 0.9^2 \times 1.0 = 0.81 \\
+G_2 &= 0 + 0.9 \times 1.0 = 0.90 \\
+G_3 &= 1.0 \\
+G_4 &= 0
+\end{aligned}
+$$
 
-critic 损失 = (0.6-0.81)² + (0.7-0.90)² + (0.8-1.0)² + (0-0)² = 0.124
-```
+critic 损失：
+
+$$
+(0.6-0.81)^2 + (0.7-0.90)^2 + (0.8-1.0)^2 + (0-0)^2 = 0.124
+$$
 
 下一轮 critic 会预测得更高一些，advantage 相应变化——critic 与策略互相迭代推进。
 
@@ -1013,9 +1055,12 @@ critic 损失 = (0.6-0.81)² + (0.7-0.90)² + (0.8-1.0)² + (0-0)² = 0.124
 
 **核心洞察**：RLHF 的最优策略有闭式解 π* ∝ π_ref·exp(r/β)，把它代回 Bradley-Terry 偏好概率，奖励模型 r 可以被**消掉**——直接用偏好对训练策略：
 
-```
-L_DPO = -log σ( β·log(π_θ(y_w)/π_ref(y_w)) - β·log(π_θ(y_l)/π_ref(y_l)) )
-```
+$$
+\mathcal{L}_{\text{DPO}} = -\log \sigma\!\left(
+\beta \log \frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}
+- \beta \log \frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}
+\right)
+$$
 
 直觉：让"被人类选中的回答 y_w 的概率相对参考模型**提升**"，让"被拒绝的回答 y_l 的相对概率**下降**"。
 
@@ -1077,9 +1122,11 @@ L_DPO = -log σ( β·log(π_θ(y_w)/π_ref(y_w)) - β·log(π_θ(y_l)/π_ref(y_l
 
 **KL 怎么加**：GRPO 的 KL 约束不像 PPO 那样作为独立损失项，而是**直接做进奖励**（DeepSeek 实现）：
 
-```
-r_total = r_规则 − β·KL(π_θ || π_ref)     ← 每条回答的奖励扣掉 KL 惩罚，再组内归一化
-```
+$$
+r_{\text{total}} = r_{\text{rule}} - \beta \operatorname{KL}(\pi_\theta \,\|\, \pi_{\text{ref}})
+$$
+
+每条回答的奖励先扣掉 KL 惩罚，再在组内做归一化。
 
 KL 惩罚和奖励优化在同一套机制里完成，实现更简单。
 
@@ -1151,9 +1198,9 @@ KL 惩罚和奖励优化在同一套机制里完成，实现更简单。
 
 **LoRA 核心**：微调的权重更新是低秩的，拆成两个小矩阵：
 
-```
-W' = W + ΔW = W + B·A，  B∈R^{d×r}，A∈R^{r×k}，r << d
-```
+$$
+W' = W + \Delta W = W + BA, \qquad B \in \mathbb{R}^{d \times r},\; A \in \mathbb{R}^{r \times k},\; r \ll d
+$$
 
 - 冻结原权重 W，只训 A、B（7B 模型可训练参数约 1%）
 - 推理时把 B·A 合并回 W，**结构不变、零额外开销**
@@ -2209,14 +2256,14 @@ Agent 演进：ReAct（思考+行动）→ 多智能体框架（AutoGen/MetaGPT�
 
 **第二层：成本数字——把技术优势翻译成可传播的数字**
 
-- 14.8T tokens / 278.8 万 H800 GPU 小时 / 按 $2/h 算约 **$5.6M**
+- 14.8T tokens / 278.8 万 H800 GPU 小时 / 按 \$2/h 算约 **\$5.6M**
 - 对比：Llama 3 405B（稠密）约 3084 万 GPU 小时 → 便宜约 **11 倍**
 - 数字为什么有传播力：它击碎了一个普遍假设——"前沿模型训练费要上亿美元"。现在五百万美元就能做，**门槛假设被改写**。
 
 **第三层：市场与叙事——为什么在 2025 年 1 月引爆**
 
 - R1 于 2025-01-20 发布，**开源权重 + 免费 App** 让普通用户第一次亲身体验"会思考"的 AI，App 冲上美区下载榜第一；
-- 2025-01-27 英伟达单日 **-17%**，市值蒸发约 $589B（当时美股史上单日最大市值蒸发）；
+- 2025-01-27 英伟达单日 **-17%**，市值蒸发约 \$589B（当时美股史上单日最大市值蒸发）；
 - 双重冲击：**能力**（推理接近 o1）+ **价格**（开源免费）同时落地；
 - 地缘叙事：在算力出口管制下逼近前沿 → 打破"算力决定论"；
 - 时机：正值 AI 资本开支泡沫争论最热、市场处于高位。
