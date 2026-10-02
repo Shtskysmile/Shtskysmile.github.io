@@ -287,7 +287,9 @@ export default function BlogArticlePage() {
                     className="mb-8 w-full rounded-xl object-cover shadow-sm"
                   />
                 ) : art ? (
-                  <div className="mb-2 aspect-[16/9] w-full overflow-hidden rounded-xl shadow-sm">
+                  <div className="relative mb-2 aspect-[16/9] w-full overflow-hidden rounded-xl shadow-sm">
+                    {/* relative 不能省：AnimeCover 的模糊垫底是 absolute inset-0，
+                        容器不是定位元素的话它会以视口为参照，盖住整篇文章 */}
                     <AnimeCover art={art} src={art.heroSrc} />
                   </div>
                 ) : (
