@@ -1,0 +1,92 @@
+{
+  "waifu": {
+    "console_open_msg": ["呼~ 你打开了控制台，是在找彩蛋吗？"],
+    "copy_message": ["咦，你复制了什么？转载记得注明出处哦~"],
+    "hidden_message": ["那人家先躲起来啦，想我了再把鼠标移过来~"],
+    "motion_message": ["唔……这样可以吗？", "看我看我，晃一下~", "换个姿势给你看~"],
+    "hour_tips": {
+      "t5-7": ["天还没大亮呢，起得真早呀~"],
+      "t7-11": ["早上好~ 今天也要元气满满哦！"],
+      "t11-14": ["到午饭时间啦，别忘了好好吃饭~"],
+      "t14-17": ["下午好~ 继续加油，你做得很好呢。"],
+      "t17-19": ["已经傍晚啦，写代码的时候时间过得真快~"],
+      "t19-21": ["晚上好~ 忙完了吗？今天辛苦啦。"],
+      "t21-23": ["夜深了，别熬太晚哦~"],
+      "t23-5": ["这么晚还没睡？要注意身体呀~"],
+      "default": ["你好呀，欢迎来到我的主页~"]
+    },
+    "referrer_message": {
+      "localhost": ["在本地预览呀，欢迎~"],
+      "default": ["欢迎你，陌生的朋友~"],
+      "none": ["你好呀，欢迎来到我的主页~"]
+    },
+    "referrer_hostname": {
+      "shtskysmile.github.io": ["欢迎来到 Shtskysmile 的主页~"]
+    }
+  },
+  "mouseover": [
+    {
+      "selector": "[data-live2d-hover='cover']",
+      "text": ["那是我的主页封面，好看吗~"]
+    },
+    {
+      "selector": "[data-live2d-hover='avatar']",
+      "text": ["那是我的头像哦~"]
+    },
+    {
+      "selector": "[data-live2d-hover='theme']",
+      "text": ["这里可以切换深色 / 浅色模式哦~"]
+    },
+    {
+      "selector": "[data-live2d-hover='about']",
+      "text": ["在读我的自我介绍呀？希望你喜欢~"]
+    },
+    {
+      "selector": "[data-live2d-hover='skills']",
+      "text": ["技术这种东西，用进度条可衡量不出来呢~"]
+    },
+    {
+      "selector": "[data-live2d-hover='socials']",
+      "text": ["交个朋友吧~ 随时欢迎联系我。"]
+    },
+    {
+      "selector": "[data-live2d-hover='certs']",
+      "text": ["这些是我一路攒下的证书~"]
+    },
+    {
+      "selector": "[data-live2d-hover='projects']",
+      "text": [
+        "这些是我的项目~ 我都是为了自己用才做的。",
+        "有兴趣的话，点进去看看 GitHub 吧~"
+      ]
+    },
+    {
+      "selector": "[data-live2d-hover='back-to-top']",
+      "text": ["要回到顶部吗？"]
+    },
+    {
+      "selector": "a[href^='http']",
+      "text": ["想点进去看看这个链接吗？"]
+    },
+    {
+      "selector": "[data-live2d-hover='article']",
+      "text": ["这里是我写的文章和随笔，随便看看~"]
+    },
+    {
+      "selector": "[data-live2d-hover='article-card']",
+      "text": ["这些是我写过的文章，点一下就能读啦~"]
+    }
+  ],
+  "click": [
+    {
+      "selector": "#live2d",
+      "text": [
+        "呀~ 你戳我做什么？",
+        "嘻嘻，好痒~",
+        "轻一点啦~",
+        "怎么啦，找我聊天吗？",
+        "再戳的话……人家要脸红啦。"
+      ]
+    }
+  ]
+}
