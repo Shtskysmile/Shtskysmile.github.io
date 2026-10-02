@@ -11,6 +11,7 @@ import { articleComponents, remarkNote } from "@/components/ArticleMarkdown";
 import ArticleToc, { useArticleToc } from "@/components/ArticleToc";
 import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
+import AnimeCover from "@/components/AnimeCover";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { formatRelativeDate, formatAbsoluteDate, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
@@ -286,8 +287,8 @@ export default function BlogArticlePage() {
                     className="mb-8 w-full rounded-xl object-cover shadow-sm"
                   />
                 ) : art ? (
-                  <div className="mb-2 aspect-[2/1] w-full overflow-hidden rounded-xl shadow-sm">
-                    <img src={art.src} alt="" className="h-full w-full object-fill" />
+                  <div className="mb-2 aspect-[16/9] w-full overflow-hidden rounded-xl shadow-sm">
+                    <AnimeCover art={art} src={art.heroSrc} />
                   </div>
                 ) : (
                   <CategoryCover

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Calendar, Clock, User } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import CategoryCover from "@/components/CategoryCover";
+import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
 import { formatRelativeDate, formatAbsoluteDate, blogSlug, coverSeed } from "@/lib/blog";
 import type { AnimeArt } from "@/lib/anime";
@@ -35,7 +36,7 @@ export default function BlogCard({ post, index, art }: BlogCardProps) {
       data-live2d-hover="article-card"
     >
       {/* 封面优先级：手动配的图 > 随机二次元图 > 内置 SVG */}
-      <div className="relative aspect-[2/1] w-full overflow-hidden">
+      <div className="relative aspect-[4/5] w-full overflow-hidden">
         {post.thumbnail ? (
           <img
             src={`/images/blog/${post.thumbnail}`}
@@ -44,11 +45,9 @@ export default function BlogCard({ post, index, art }: BlogCardProps) {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : art ? (
-          <img
-            src={art.src}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-fill transition-transform duration-500 group-hover:scale-105"
+          <AnimeCover
+            art={art}
+            imgClassName="transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <CategoryCover

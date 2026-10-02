@@ -12,9 +12,9 @@
  * 上层会退回内置的 SVG 封面（CategoryCover），不会留下破图。
  */
 export interface AnimeArt {
-  /** 卡片封面用（2:1），可直接作为 img src */
+  /** 卡片封面用（宽 400，等比） */
   src: string;
-  /** 分类页那种很宽的头图用（4:1） */
+  /** 阅读页/分类页那种大图用（宽 1200，等比） */
   heroSrc: string;
   /** 原图地址（nekos.best 的 CDN） */
   url: string;
@@ -34,17 +34,14 @@ interface RawResult {
 }
 
 /**
- * 用 fit=fill 把图**缩放**到目标尺寸，而不是 fit=cover 那样裁切。
+ * 只按宽度等比缩放，不指定高度、也不裁切——所以只传 w，高度由原图比例决定。
  *
- * 原图是竖版的角色插画（1152×2048 这类），裁切方案（哪怕靠顶部对齐）仍会切掉
- * 头部；改成非等比缩放后整张图都保留——竖版图相当于把宽度拉伸，
- * 横版图相当于把高度压缩。代价是画面会变形，换来的是构图完整。
+ * 前面试过两种裁切方案（居中裁、靠顶裁）都会把头切掉，而非等比拉伸又会让人物变形，
+ * 所以这里保留完整原图，显示时用 object-contain 等比放进框里，
+ * 空出来的部分由同一张图的模糊放大版垫底（见 AnimeCover），既不变形也不留死白。
  */
-function proxied(url: string, width: number, height: number): string {
-  return (
-    `https://wsrv.nl/?url=${encodeURIComponent(url)}` +
-    `&w=${width}&h=${height}&fit=fill&output=webp&q=80`
-  );
+function proxied(url: string, width: number): string {
+  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
 }
 
 let cache: AnimeArt[] = [];
@@ -58,8 +55,8 @@ async function fetchBatch(): Promise<AnimeArt[]> {
     return (json.results ?? [])
       .filter((r): r is RawResult & { url: string } => Boolean(r.url))
       .map((r) => ({
-        src: proxied(r.url, 640, 320),
-        heroSrc: proxied(r.url, 1200, 300),
+        src: proxied(r.url, 400),
+        heroSrc: proxied(r.url, 1200),
         url: r.url,
         artistName: r.artist_name ?? "",
         artistHref: r.artist_href ?? "",
