@@ -6,6 +6,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "llm-interview-review.md",
+    "category": "study",
+    "readingMinutes": 106,
     "highlight": true
   },
   {
@@ -15,7 +17,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "data-structures-algorithms-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 8
   },
   {
     "title": "操作系统面试复习资料",
@@ -24,7 +27,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "operating-systems-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 5
   },
   {
     "title": "计算机网络面试复习资料",
@@ -33,7 +37,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "computer-networks-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 5
   },
   {
     "title": "计算机组成原理面试复习资料",
@@ -42,7 +47,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "computer-organization-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 3
   },
   {
     "title": "数据库与 SQL 面试复习资料",
@@ -51,7 +57,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "database-sql-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 7
   },
   {
     "title": "软件工程面试复习资料",
@@ -60,7 +67,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "software-engineering-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 3
   },
   {
     "title": "机器学习面试复习资料",
@@ -69,7 +77,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "machine-learning-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 6
   },
   {
     "title": "深度学习面试复习资料",
@@ -78,7 +87,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "deep-learning-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 5
   },
   {
     "title": "强化学习基础面试复习资料",
@@ -87,7 +97,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "reinforcement-learning-basics-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 7
   },
   {
     "title": "自然语言处理面试复习资料",
@@ -96,7 +107,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "nlp-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 5
   },
   {
     "title": "大语言模型与智能体面试复习资料",
@@ -105,7 +117,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "llm-agents-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 7
   },
   {
     "title": "概率论与数理统计面试复习资料",
@@ -114,7 +127,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "probability-statistics-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 5
   },
   {
     "title": "线性代数与优化面试复习资料",
@@ -123,7 +137,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "linear-algebra-optimization-interview-review.md",
-    "highlight": true
+    "category": "study",
+    "readingMinutes": 4
   },
   {
     "title": "强化学习面试复习资料（面向大模型对齐与智能体）",
@@ -132,6 +147,8 @@
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "reinforcement-learning-interview-review.md",
+    "category": "study",
+    "readingMinutes": 25,
     "highlight": true
   }
 ]

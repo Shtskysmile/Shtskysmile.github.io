@@ -159,6 +159,32 @@ function buildPage({ title, description, url, image, type, extra }) {
   console.log("  created: dist/blogs/index.html");
 }
 
+// ── Generate category pages ─────────────────────────────────────────
+// 分类表和 src/lib/constants.ts 里的 BLOG_CATEGORIES 是一份数据的两个副本，
+// 改了那边记得同步这里（与 SITE_NAME / BASE_URL 同类的重复）。
+const CATEGORIES = [
+  { id: "study", name: "保研学习", description: "专业课复习、面试与笔试的整理" },
+  { id: "life", name: "日常生活", description: "随笔与记录" },
+  { id: "games", name: "游戏", description: "玩过的、在玩的" },
+  { id: "abyss", name: "深渊区域", description: "压在底下的东西" },
+];
+
+for (const category of CATEGORIES) {
+  const dir = resolve(DIST, "categories", category.id);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+  const html = buildPage({
+    title: `${category.name} | ${SITE_NAME}`,
+    description: `${category.name}：${category.description}`,
+    url: `${BASE_URL}/categories/${category.id}`,
+    image: COVER_IMAGE,
+    type: "website",
+  });
+
+  writeFileSync(resolve(dir, "index.html"), html, "utf-8");
+  console.log(`  created: dist/categories/${category.id}/index.html`);
+}
+
 // ── Generate individual article pages ───────────────────────────────
 for (const post of posts) {
   const slug = post.blogUrl.replace(/\.md$/, "");
@@ -233,6 +259,16 @@ for (const post of posts) {
     <priority>0.8</priority>
   </url>
 `;
+
+  for (const category of CATEGORIES) {
+    sitemap += `  <url>
+    <loc>${BASE_URL}/categories/${category.id}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+`;
+  }
 
   for (const post of posts) {
     const slug = post.blogUrl.replace(/\.md$/, "");

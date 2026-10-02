@@ -29,3 +29,38 @@ export const SCHOOL_EMBLEMS = [
   { name: "电子科技大学", src: "/images/logos/uestc.svg" },
   { name: "北京大学", src: "/images/logos/pku.svg" },
 ] as const;
+
+/**
+ * 博客分类。`id` 是 URL 里用的英文 slug（/categories/<id>），`name` 是显示名。
+ * `colors` 给 CategoryCover 生成封面渐变：每个分类一套色调，同一分类下按
+ * 文章序号变化构图，所以列表里看着不重样，整体色调仍然统一。
+ */
+export const BLOG_CATEGORIES = [
+  {
+    id: "study",
+    name: "保研学习",
+    description: "专业课复习、面试与笔试的整理",
+    colors: ["#6b7fb3", "#39466b"],
+  },
+  {
+    id: "life",
+    name: "日常生活",
+    description: "随笔与记录",
+    colors: ["#d99a63", "#96543c"],
+  },
+  {
+    id: "games",
+    name: "游戏",
+    description: "玩过的、在玩的",
+    colors: ["#8f7ec4", "#463572"],
+  },
+  {
+    id: "abyss",
+    name: "深渊区域",
+    description: "压在底下的东西",
+    colors: ["#4c4c66", "#12121a"],
+  },
+] as const;
+
+/** 分类缺省值。blogs.json 是 JSON 断言成类型的，字段漏写不会被 TS 拦下。 */
+export const DEFAULT_BLOG_CATEGORY = "study";

@@ -2,16 +2,16 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, User } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { formatRelativeDate, formatAbsoluteDate, estimateReadingTime, blogSlug } from "@/lib/blog";
+import CategoryCover from "@/components/CategoryCover";
+import { formatRelativeDate, formatAbsoluteDate, blogSlug, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
 
 interface BlogCardProps {
   post: BlogPost;
   index: number;
-  markdown: string | null;
 }
 
-export default function BlogCard({ post, index, markdown }: BlogCardProps) {
+export default function BlogCard({ post, index }: BlogCardProps) {
   const prefersReduced = useReducedMotion();
   const slug = blogSlug(post.blogUrl);
 
@@ -25,8 +25,8 @@ export default function BlogCard({ post, index, markdown }: BlogCardProps) {
       data-live2d-hover="article-card"
     >
       <div className="flex items-start gap-4">
-        {/* Thumbnail */}
-        {post.thumbnail && (
+        {/* Thumbnail：配了图就用图，没配就用分类封面 */}
+        {post.thumbnail ? (
           <img
             src={`/images/blog/${post.thumbnail}`}
             alt={post.title}
@@ -34,6 +34,12 @@ export default function BlogCard({ post, index, markdown }: BlogCardProps) {
             height={80}
             loading="lazy"
             className="hidden h-20 w-40 shrink-0 rounded-lg object-cover sm:block"
+          />
+        ) : (
+          <CategoryCover
+            category={post.category}
+            seed={coverSeed(post.blogUrl)}
+            className="hidden h-20 w-40 shrink-0 rounded-lg sm:block"
           />
         )}
 
@@ -60,10 +66,12 @@ export default function BlogCard({ post, index, markdown }: BlogCardProps) {
                 ({formatAbsoluteDate(post.publishDate)})
               </span>
             </span>
-            <span className="flex items-center gap-1">
-              <Clock size={12} />
-              {estimateReadingTime(markdown)}
-            </span>
+            {post.readingMinutes !== undefined && (
+              <span className="flex items-center gap-1">
+                <Clock size={12} />
+                {post.readingMinutes} 分钟阅读
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <User size={12} />
               作者：{post.author}

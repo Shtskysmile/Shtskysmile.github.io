@@ -10,6 +10,7 @@ import Skeleton from "@/components/ui/Skeleton";
 const HomePage = lazy(() => import("@/pages/HomePage"));
 const BlogsPage = lazy(() => import("@/pages/BlogsPage"));
 const BlogArticlePage = lazy(() => import("@/pages/BlogArticlePage"));
+const CategoryPage = lazy(() => import("@/pages/CategoryPage"));
 
 function PageFallback() {
   return (
@@ -53,6 +54,14 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <BlogArticlePage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/categories/:categoryId"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <CategoryPage />
                 </Suspense>
               }
             />

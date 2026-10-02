@@ -6,7 +6,9 @@ import remarkGfm from "remark-gfm";
 import Skeleton from "@/components/ui/Skeleton";
 import BackToTop from "@/components/BackToTop";
 import { articleComponents, remarkNote } from "@/components/ArticleMarkdown";
-import { formatRelativeDate, formatAbsoluteDate, estimateReadingTime } from "@/lib/blog";
+import ArticleToc, { useArticleToc } from "@/components/ArticleToc";
+import CategoryCover from "@/components/CategoryCover";
+import { formatRelativeDate, formatAbsoluteDate, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 import { Helmet } from "react-helmet-async";
@@ -18,6 +20,8 @@ export default function BlogArticlePage() {
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
+  const { items: tocItems, activeId } = useArticleToc(articleRef, markdown);
 
   const post = allPosts.find((p) => p.blogUrl.replace(/\.md$/, "") === slug);
   const siteName = "Shtskysmile 的个人主页";
@@ -207,91 +211,110 @@ export default function BlogArticlePage() {
         style={{ transform: "scaleX(0)" }}
       />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-        {/* Back button */}
-        <button
-          onClick={() => window.history.back()}
-          className="mb-6 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-        >
-          <ArrowLeft size={16} />
-          返回
-        </button>
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:max-w-5xl">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:gap-10">
+          <div className="min-w-0">
+            {/* Back button */}
+            <button
+              onClick={() => window.history.back()}
+              className="mb-6 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+            >
+              <ArrowLeft size={16} />
+              返回
+            </button>
 
-        {loading ? (
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-10 w-3/4" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-4/6" />
-          </div>
-        ) : (
-          <>
-            {/* Title */}
-            <h1 className="mb-4 font-heading text-2xl text-stone-800 dark:text-stone-100 sm:text-3xl">
-              {post.title}
-            </h1>
+            {loading ? (
+              <div className="flex flex-col gap-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+            ) : (
+              <>
+                {/* Title */}
+                <h1 className="mb-4 font-heading text-2xl text-stone-800 dark:text-stone-100 sm:text-3xl">
+                  {post.title}
+                </h1>
 
-            {/* Meta row */}
-            <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-400 dark:text-stone-500">
-              <span className="flex items-center gap-1">
-                <Calendar size={12} />
-                {formatRelativeDate(post.publishDate)}
-                <span className="text-stone-300 dark:text-stone-600">
-                  ({formatAbsoluteDate(post.publishDate)})
-                </span>
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock size={12} />
-                {estimateReadingTime(markdown)}
-              </span>
-              <span className="flex items-center gap-1">
-                <User size={12} />
-                作者：{post.author}
-              </span>
-            </div>
+                {/* Meta row */}
+                <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-400 dark:text-stone-500">
+                  <span className="flex items-center gap-1">
+                    <Calendar size={12} />
+                    {formatRelativeDate(post.publishDate)}
+                    <span className="text-stone-300 dark:text-stone-600">
+                      ({formatAbsoluteDate(post.publishDate)})
+                    </span>
+                  </span>
+                  {post.readingMinutes !== undefined && (
+                    <span className="flex items-center gap-1">
+                      <Clock size={12} />
+                      {post.readingMinutes} 分钟阅读
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <User size={12} />
+                    作者：{post.author}
+                  </span>
+                </div>
 
-            {/* Tags */}
-            <div className="mb-5 flex flex-wrap gap-1.5">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs text-accent dark:bg-accent/20"
+                {/* Tags */}
+                <div className="mb-5 flex flex-wrap gap-1.5">
+                  {post.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs text-accent dark:bg-accent/20"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Thumbnail：配了图就用图，没配就用分类封面 */}
+                {post.thumbnail ? (
+                  <img
+                    src={`/images/blog/${post.thumbnail}`}
+                    alt={post.title}
+                    width={800}
+                    height={400}
+                    className="mb-8 w-full rounded-xl object-cover shadow-sm"
+                  />
+                ) : (
+                  <CategoryCover
+                    category={post.category}
+                    seed={coverSeed(post.blogUrl)}
+                    className="mb-8 h-auto w-full rounded-xl shadow-sm"
+                  />
+                )}
+
+                {/* Article content */}
+                <article
+                  ref={articleRef}
+                  className="prose prose-stone max-w-none dark:prose-invert"
                 >
-                  {tag}
-                </span>
-              ))}
-            </div>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkNote]}
+                    components={articleComponents}
+                  >
+                    {markdown ?? ""}
+                  </ReactMarkdown>
+                </article>
 
-            {/* Thumbnail */}
-            {post.thumbnail && (
-              <img
-                src={`/images/blog/${post.thumbnail}`}
-                alt={post.title}
-                width={800}
-                height={400}
-                className="mb-8 w-full rounded-xl object-cover shadow-sm"
-              />
+                {/* Footer */}
+                <div className="mt-12 border-t border-stone-200 pt-6 text-center dark:border-stone-700">
+                  <Link
+                    to="/blogs"
+                    className="text-sm text-accent underline-offset-4 transition-colors hover:underline"
+                  >
+                    查看全部文章
+                  </Link>
+                </div>
+              </>
             )}
-
-            {/* Article content */}
-            <article className="prose prose-stone max-w-none dark:prose-invert">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkNote]} components={articleComponents}>
-                {markdown ?? ""}
-              </ReactMarkdown>
-            </article>
-
-            {/* Footer */}
-            <div className="mt-12 border-t border-stone-200 pt-6 text-center dark:border-stone-700">
-              <Link
-                to="/blogs"
-                className="text-sm text-accent underline-offset-4 transition-colors hover:underline"
-              >
-                查看全部文章
-              </Link>
-            </div>
-          </>
-        )}
+          </div>
+          <ArticleToc items={tocItems} activeId={activeId} />
+        </div>
       </div>
 
       <BackToTop />

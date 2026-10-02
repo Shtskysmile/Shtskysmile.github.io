@@ -1,9 +1,18 @@
 import { useState, useEffect, useRef } from "react";
+import { NavLink } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
-import { SCHOOL_EMBLEMS } from "@/lib/constants";
+import { SCHOOL_EMBLEMS, BLOG_CATEGORIES } from "@/lib/constants";
 
 /** Minimum downward scroll (px) before hiding. Upward scroll shows immediately. */
 const HIDE_DELTA = 10;
+
+function categoryLinkClass({ isActive }: { isActive: boolean }) {
+  return `transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+    isActive
+      ? "text-accent"
+      : "text-stone-500 hover:text-accent dark:text-stone-400 dark:hover:text-accent"
+  }`;
+}
 
 function Logo() {
   return (
@@ -100,6 +109,27 @@ export default function Header() {
         </div>
         <ThemeToggle />
       </div>
+
+      {/* 分类导航：放在顶栏里，任何页面都能看到 */}
+      <nav
+        aria-label="文章分类"
+        className="border-t border-stone-200/70 px-4 pb-2 dark:border-stone-800/70 sm:px-6"
+      >
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+          <li>
+            <NavLink to="/blogs" end className={categoryLinkClass}>
+              全部文章
+            </NavLink>
+          </li>
+          {BLOG_CATEGORIES.map((category) => (
+            <li key={category.id}>
+              <NavLink to={`/categories/${category.id}`} className={categoryLinkClass}>
+                {category.name}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
   );
 }

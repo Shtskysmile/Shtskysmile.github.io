@@ -41,3 +41,13 @@ export function estimateReadingTime(markdown: string | null): string {
 export function blogSlug(blogUrl: string): string {
   return blogUrl.replace(/\.md$/, "");
 }
+
+/**
+ * 封面构图的确定性 seed。由 slug 推出而不是取列表下标——同一篇文章
+ * 在「全部文章」和分类页里的下标不同，用下标会让两处封面不一致。
+ */
+export function coverSeed(blogUrl: string): number {
+  let hash = 0;
+  for (const ch of blogUrl) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
+  return hash;
+}
