@@ -1,5 +1,3 @@
-import { coverSeed } from "@/lib/blog";
-
 /**
  * 文章封面用的随机二次元图。
  *
@@ -32,8 +30,8 @@ export interface AnimeArt {
 }
 
 const API = "https://nekos.best/api/v2/neko";
-/** 一次取多少张。卡片页和阅读页都用这个数，才能拿到同一批图。 */
-export const ANIME_BATCH = 20;
+/** 接口单次返回的上限（传更大的 amount 也只给 20 张，实测过） */
+const API_PAGE = 20;
 
 interface RawResult {
   url?: string;
@@ -85,13 +83,22 @@ export function peekAnimeArt(count: number): AnimeArt[] {
   return cache.slice(0, count);
 }
 
-/** 取一批图；同一页多个组件共用一次请求。失败返回空数组。 */
+/** 取形象：同一页多个组件共用一次请求；不够 count 张时会多取几页。失败返回空数组。 */
 export async function loadAnimeArt(count: number): Promise<AnimeArt[]> {
   if (cache.length < count) {
     if (!inflight) {
-      inflight = request(ANIME_BATCH)
-        .then((list) => {
-          if (list.length > cache.length) cache = list;
+      const pages = Math.max(1, Math.ceil(count / API_PAGE));
+      inflight = Promise.all(Array.from({ length: pages }, () => request(API_PAGE)))
+        .then((batches) => {
+          // 多页是各自随机取的，可能重复，按 url 去重
+          const seen = new Set<string>();
+          const merged: AnimeArt[] = [];
+          for (const art of batches.flat()) {
+            if (seen.has(art.url)) continue;
+            seen.add(art.url);
+            merged.push(art);
+          }
+          if (merged.length > cache.length) cache = merged;
           return cache;
         })
         .finally(() => {
@@ -104,13 +111,15 @@ export async function loadAnimeArt(count: number): Promise<AnimeArt[]> {
 }
 
 /**
- * 按 key（一般传 blogUrl）从一批图里稳定地挑一张。
- * 卡片和阅读页都用它挑，所以同一篇文章这两处显示的是同一张插画——
- * 看到喜欢的图点进去还能找到它。
+ * 按序号取图（序号来自 lib/posts 的 postIndex，即文章在全局列表里的位置）。
+ * 卡片和阅读页用同一个序号，所以同一篇文章两处看到的是同一张图；
+ * 序号互不相同，所以只要文章数不超过图片数，列表里就不会出现重复的图。
+ * 不用哈希是因为哈希取模必然撞车——15 篇映射到 20 个槽位时至少撞一对的概率
+ * 接近 99%，那正是「列表里有两张一样的图」的来源。
  */
-export function pickArt(batch: AnimeArt[], key: string): AnimeArt | undefined {
+export function pickArt(batch: AnimeArt[], index: number): AnimeArt | undefined {
   if (batch.length === 0) return undefined;
-  return batch[coverSeed(key) % batch.length];
+  return batch[index % batch.length];
 }
 
 /** 抽卡用：绕开缓存，每次现取一张新的随机图 */

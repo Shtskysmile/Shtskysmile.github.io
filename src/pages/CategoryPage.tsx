@@ -7,7 +7,8 @@ import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
-import { ANIME_BATCH, pickArt } from "@/lib/anime";
+import { pickArt } from "@/lib/anime";
+import { postIndex } from "@/lib/posts";
 import Pagination from "@/components/Pagination";
 import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
@@ -42,8 +43,9 @@ export default function CategoryPage() {
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visible = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const animeArt = useAnimeArt(ANIME_BATCH);
-  const [heroArt] = useAnimeArt(1);
+  const animeArt = useAnimeArt(allPosts.length + 1);
+  // 下标 0..len-1 留给文章卡片，头图取最后一张，否则会和某篇的封面重复
+  const heroArt = pickArt(animeArt, allPosts.length);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -139,7 +141,7 @@ export default function CategoryPage() {
                   key={post.blogUrl}
                   post={post}
                   index={i}
-                  art={pickArt(animeArt, post.blogUrl)}
+                  art={pickArt(animeArt, postIndex(post.blogUrl))}
                 />
               ))}
             </div>
