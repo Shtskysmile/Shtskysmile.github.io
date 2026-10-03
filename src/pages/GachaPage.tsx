@@ -53,7 +53,7 @@ export default function GachaPage() {
             <AnimeCover art={art} src={art.heroSrc} />
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-sm text-stone-500 dark:text-stone-400">
-              {failed ? "没抽到：插画接口没响应，过会儿再试。" : "正在抽……"}
+              {failed ? "图集里还没有图。" : "正在抽……"}
             </div>
           )}
         </div>

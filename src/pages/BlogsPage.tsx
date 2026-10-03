@@ -4,8 +4,7 @@ import { ArrowLeft, ArrowUpDown, BookOpen } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import BlogCard from "@/components/BlogCard";
 import Pagination from "@/components/Pagination";
-import { useAnimeArt } from "@/hooks/useAnimeArt";
-import { pickArt } from "@/lib/anime";
+import { animeArt, pickArt } from "@/lib/anime";
 import { postIndex } from "@/lib/posts";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
@@ -41,7 +40,6 @@ export default function BlogsPage() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const visible = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-  const animeArt = useAnimeArt(allPosts.length);
 
   return (
     <>

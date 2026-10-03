@@ -12,8 +12,7 @@ import ArticleToc, { useArticleToc } from "@/components/ArticleToc";
 import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
-import { useAnimeArt } from "@/hooks/useAnimeArt";
-import { pickArt } from "@/lib/anime";
+import { animeArt, pickArt } from "@/lib/anime";
 import { postIndex } from "@/lib/posts";
 import { formatRelativeDate, formatAbsoluteDate, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
@@ -29,10 +28,9 @@ export default function BlogArticlePage() {
   const [notFound, setNotFound] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   const { items: tocItems, activeId } = useArticleToc(articleRef, markdown);
-  const animeBatch = useAnimeArt(allPosts.length);
 
   const post = allPosts.find((p) => p.blogUrl.replace(/\.md$/, "") === slug);
-  const art = post ? pickArt(animeBatch, postIndex(post.blogUrl)) : undefined;
+  const art = post ? pickArt(animeArt, postIndex(post.blogUrl)) : undefined;
   const siteName = "Shtskysmile 的个人主页";
   const baseUrl = "https://shtskysmile.github.io";
   const canonicalUrl = post
