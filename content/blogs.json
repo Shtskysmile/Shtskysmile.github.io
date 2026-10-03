@@ -111,16 +111,6 @@
     "readingMinutes": 5
   },
   {
-    "title": "大语言模型与智能体面试复习资料",
-    "description": "训练流程、位置编码与 RoPE、RAG、Function Calling、智能体评估的常见面试题。",
-    "tags": ["LLM", "Agent", "面试"],
-    "author": "Shtskysmile",
-    "publishDate": "2026-10-02",
-    "blogUrl": "llm-agents-interview-review.md",
-    "category": "study",
-    "readingMinutes": 7
-  },
-  {
     "title": "概率论与数理统计面试复习资料",
     "description": "常见分布、大数定律与中心极限定理、假设检验、最大似然估计的常见面试题。",
     "tags": ["概率统计", "面试"],
@@ -150,5 +140,15 @@
     "category": "study",
     "readingMinutes": 27,
     "highlight": true
+  },
+  {
+    "title": "一起来玩 Minecraft",
+    "description": "Java 版服务器 nbb.rainplay.cn:15750，加上就能进，欢迎来一起玩。",
+    "tags": ["Minecraft", "服务器", "游戏"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-03",
+    "blogUrl": "minecraft-server.md",
+    "category": "games",
+    "readingMinutes": 1
   }
 ]
