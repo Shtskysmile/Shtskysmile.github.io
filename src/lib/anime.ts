@@ -127,9 +127,3 @@ export function pickArt(batch: AnimeArt[] | null, index: number): AnimeArt | nul
   if (batch.length === 0) return undefined;
   return batch[index % batch.length] ?? null;
 }
-
-/** 抽卡：从当前图集里随机取一张 */
-export function randomArt(batch: AnimeArt[]): AnimeArt | null {
-  if (batch.length === 0) return null;
-  return batch[Math.floor(Math.random() * batch.length)] ?? null;
-}

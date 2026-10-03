@@ -5,10 +5,20 @@ import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { useCoverArt } from "@/hooks/useCoverArt";
-import { randomArt, type AnimeArt } from "@/lib/anime";
+import type { AnimeArt } from "@/lib/anime";
 import { allPosts } from "@/lib/posts";
 
 const SITE_NAME = "Shtskysmile 的个人主页";
+
+/** Fisher–Yates 洗牌，不改原数组 */
+function shuffled<T>(items: T[]): T[] {
+  const out = items.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
 
 /** 抽卡：从当前图集里随机抽一张（能连上接口时就是接口那批，否则用本地兜底图集） */
 export default function GachaPage() {
@@ -18,13 +28,31 @@ export default function GachaPage() {
   const [failed, setFailed] = useState(false);
   const [count, setCount] = useState(0);
   const cover = useCoverArt(art);
+  /**
+   * 牌堆：洗好后抽一张少一张，抽空了才重洗。
+   * 图集只有二十来张，直接 Math.random() 是有放回抽取，抽几次就会撞重复。
+   */
+  const deckRef = useRef<AnimeArt[]>([]);
 
   const draw = useCallback(() => {
     // 图集还没决定好：先不抽，等它到了再由下面的 effect 补抽一次
     if (!batch) return;
     setLoading(true);
     setFailed(false);
-    const next = randomArt(batch);
+
+    if (deckRef.current.length === 0) {
+      const cards = shuffled(batch);
+      const top = cards.length - 1;
+      // 重洗后的第一张不能还是刚抽到的那张，否则整轮的第一抽看着像没反应
+      if (art && top > 0 && cards[top] === art) {
+        const head = cards[0]!;
+        cards[0] = cards[top]!;
+        cards[top] = head;
+      }
+      deckRef.current = cards;
+    }
+
+    const next = deckRef.current.pop();
     if (next) {
       setArt(next);
       setCount((n) => n + 1);
@@ -32,7 +60,7 @@ export default function GachaPage() {
       setFailed(true);
     }
     setLoading(false);
-  }, [batch]);
+  }, [batch, art]);
 
   // 图集决定好了才自动抽一次，且只抽一次：batch 变化会让 draw 重建，
   // 不守一下的话会再自动抽一次，计数器莫名跳一格
