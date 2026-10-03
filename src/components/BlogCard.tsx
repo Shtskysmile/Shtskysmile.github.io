@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Calendar, Clock, User } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useCoverArt } from "@/hooks/useCoverArt";
 import CategoryCover from "@/components/CategoryCover";
 import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
@@ -12,8 +13,11 @@ import type { BlogPost } from "@/types/content";
 interface BlogCardProps {
   post: BlogPost;
   index: number;
-  /** 随机二次元封面；取不到时退回内置 SVG 封面 */
-  art?: AnimeArt;
+  /**
+   * 随机二次元封面。null = 图集还没决定好，封面留白；
+   * undefined = 图集是空的，退回内置 SVG 封面。
+   */
+  art?: AnimeArt | null;
 }
 
 /**
@@ -24,6 +28,7 @@ interface BlogCardProps {
  */
 export default function BlogCard({ post, index, art }: BlogCardProps) {
   const prefersReduced = useReducedMotion();
+  const cover = useCoverArt(art);
   const href = `/blogs/${blogSlug(post.blogUrl)}`;
 
   return (
@@ -44,9 +49,13 @@ export default function BlogCard({ post, index, art }: BlogCardProps) {
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-        ) : art ? (
+        ) : art === null ? (
+          // 图集还没决定好：留白，等决定好了再画，避免先画一张再换掉
+          <div className="h-full w-full bg-stone-200/70 dark:bg-stone-700/40" aria-hidden="true" />
+        ) : cover.art ? (
           <AnimeCover
-            art={art}
+            art={cover.art}
+            onError={cover.onError}
             imgClassName="transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -57,8 +66,12 @@ export default function BlogCard({ post, index, art }: BlogCardProps) {
           />
         )}
 
-        {!post.thumbnail && art && (
-          <ArtCredit art={art} variant="overlay" className="absolute bottom-1.5 right-1.5" />
+        {!post.thumbnail && cover.art && (
+          <ArtCredit
+            art={cover.art}
+            variant="overlay"
+            className="absolute bottom-1.5 right-1.5"
+          />
         )}
       </div>
 

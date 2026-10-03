@@ -4,6 +4,7 @@ import { Dices } from "lucide-react";
 import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
+import { useCoverArt } from "@/hooks/useCoverArt";
 import { randomArt, type AnimeArt } from "@/lib/anime";
 import { allPosts } from "@/lib/posts";
 
@@ -16,8 +17,11 @@ export default function GachaPage() {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [count, setCount] = useState(0);
+  const cover = useCoverArt(art);
 
   const draw = useCallback(() => {
+    // 图集还没决定好：先不抽，等它到了再由下面的 effect 补抽一次
+    if (!batch) return;
     setLoading(true);
     setFailed(false);
     const next = randomArt(batch);
@@ -30,14 +34,14 @@ export default function GachaPage() {
     setLoading(false);
   }, [batch]);
 
-  // 只在挂载时抽一次：接口那批图到达后 batch 会变、draw 随之重建，
+  // 图集决定好了才自动抽一次，且只抽一次：batch 变化会让 draw 重建，
   // 不守一下的话会再自动抽一次，计数器莫名跳一格
   const drawnOnce = useRef(false);
   useEffect(() => {
-    if (drawnOnce.current) return;
+    if (drawnOnce.current || !batch) return;
     drawnOnce.current = true;
     draw();
-  }, [draw]);
+  }, [batch, draw]);
 
   return (
     <>
@@ -57,8 +61,8 @@ export default function GachaPage() {
         </p>
 
         <div className="relative mt-5 aspect-[3/4] w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-100 shadow-sm dark:border-stone-700 dark:bg-stone-900">
-          {art ? (
-            <AnimeCover art={art} src={art.heroSrc} />
+          {cover.art ? (
+            <AnimeCover art={cover.art} src={cover.art.heroSrc} onError={cover.onError} />
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-sm text-stone-500 dark:text-stone-400">
               {failed ? "图集里还没有图。" : "正在抽……"}
@@ -67,7 +71,7 @@ export default function GachaPage() {
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-4">
-          <ArtCredit art={art ?? undefined} className="min-w-0 flex-1" />
+          <ArtCredit art={cover.art} className="min-w-0 flex-1" />
           <span className="shrink-0 text-xs text-stone-400 dark:text-stone-500">
             已抽 {count} 次
           </span>

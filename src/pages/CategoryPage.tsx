@@ -8,6 +8,7 @@ import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
 import { pickArt } from "@/lib/anime";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
+import { useCoverArt } from "@/hooks/useCoverArt";
 import { postIndex } from "@/lib/posts";
 import Pagination from "@/components/Pagination";
 import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
@@ -46,6 +47,7 @@ export default function CategoryPage() {
   const visible = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   // 下标 0..len-1 留给文章卡片，头图取最后一张，否则会和某篇的封面重复
   const heroArt = pickArt(animeArt, allPosts.length);
+  const heroCover = useCoverArt(heroArt);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -106,10 +108,24 @@ export default function CategoryPage() {
         </div>
 
         {/* 分类头图：随机二次元图，取不到时退回内置 SVG */}
-        {heroArt ? (
+        {heroArt === null ? (
+          // 图集还没决定好：先留白，别画一张再换掉
+          <div
+            className="mb-2 aspect-[3/1] w-full rounded-xl bg-stone-200/70 shadow-sm dark:bg-stone-700/40"
+            aria-hidden="true"
+          />
+        ) : heroCover.art ? (
           <div className="relative mb-2 aspect-[3/1] w-full overflow-hidden rounded-xl shadow-sm">
-            <AnimeCover art={heroArt} src={heroArt.heroSrc} />
-            <ArtCredit art={heroArt} variant="overlay" className="absolute bottom-1.5 right-1.5" />
+            <AnimeCover
+              art={heroCover.art}
+              src={heroCover.art.heroSrc}
+              onError={heroCover.onError}
+            />
+            <ArtCredit
+              art={heroCover.art}
+              variant="overlay"
+              className="absolute bottom-1.5 right-1.5"
+            />
           </div>
         ) : (
           <CategoryCover

@@ -14,6 +14,7 @@ import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
 import { pickArt } from "@/lib/anime";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
+import { useCoverArt } from "@/hooks/useCoverArt";
 import { postIndex } from "@/lib/posts";
 import { formatRelativeDate, formatAbsoluteDate, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
@@ -33,6 +34,7 @@ export default function BlogArticlePage() {
   const post = allPosts.find((p) => p.blogUrl.replace(/\.md$/, "") === slug);
   const animeArt = useAnimeArt(allPosts.length + 2);
   const art = post ? pickArt(animeArt, postIndex(post.blogUrl)) : undefined;
+  const cover = useCoverArt(art);
   const siteName = "Shtskysmile 的个人主页";
   const baseUrl = "https://shtskysmile.github.io";
   const canonicalUrl = post
@@ -289,11 +291,17 @@ export default function BlogArticlePage() {
                     height={400}
                     className="mb-8 w-full rounded-xl object-cover shadow-sm"
                   />
-                ) : art ? (
+                ) : art === null ? (
+                  // 图集还没决定好：先留白，别画一张再换掉
+                  <div
+                    className="mb-2 aspect-[16/9] w-full rounded-xl bg-stone-200/70 shadow-sm dark:bg-stone-700/40"
+                    aria-hidden="true"
+                  />
+                ) : cover.art ? (
                   <div className="relative mb-2 aspect-[16/9] w-full overflow-hidden rounded-xl shadow-sm">
                     {/* relative 不能省：AnimeCover 的模糊垫底是 absolute inset-0，
                         容器不是定位元素的话它会以视口为参照，盖住整篇文章 */}
-                    <AnimeCover art={art} src={art.heroSrc} />
+                    <AnimeCover art={cover.art} src={cover.art.heroSrc} onError={cover.onError} />
                   </div>
                 ) : (
                   <CategoryCover
@@ -302,7 +310,9 @@ export default function BlogArticlePage() {
                     className="mb-8 h-auto w-full rounded-xl shadow-sm"
                   />
                 )}
-                {!post.thumbnail && <ArtCredit art={art} className="mb-8" />}
+                {!post.thumbnail && cover.art && (
+                  <ArtCredit art={cover.art} className="mb-8" />
+                )}
 
                 {/* Article content */}
                 <article

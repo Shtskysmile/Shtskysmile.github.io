@@ -19,6 +19,12 @@ export interface AnimeArt {
   artistName: string;
   artistHref: string;
   sourceUrl: string;
+  /**
+   * 同一槽位的本地图。接口图加载失败时整张换掉它（连署名一起换），
+   * 否则会拿接口图的画师名去署一张本地图。
+   * 本地图集自己身上没有这个字段——它已经是最后一层了。
+   */
+  fallback?: AnimeArt;
 }
 
 interface CreditRow {
@@ -39,6 +45,8 @@ const API = "https://nekos.best/api/v2/neko";
 /** 接口单次返回上限（传更大的 amount 也只给 20 张，实测过） */
 const API_PAGE = 20;
 const RESIZE_WIDTH = 800;
+/** 接口卡住时的上限：超过就当取不到，直接退回本地图集，不能让封面一直空着 */
+const FETCH_TIMEOUT_MS = 8000;
 
 /** 本地兜底图集：public/images/anime/<序号>.webp，署名在 content/anime.json */
 export const localArt: AnimeArt[] = (creditsData as CreditRow[]).map((row) => {
@@ -69,11 +77,13 @@ function toArt(r: RawResult & { url: string }): AnimeArt {
 
 /** 调接口取一批图；任何失败（含 Cloudflare 403、断网、超时）都返回空数组 */
 export async function fetchRemoteArt(count: number): Promise<AnimeArt[]> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const pages = Math.max(1, Math.ceil(count / API_PAGE));
     const batches = await Promise.all(
       Array.from({ length: pages }, () =>
-        fetch(`${API}?amount=${API_PAGE}`)
+        fetch(`${API}?amount=${API_PAGE}`, { signal: controller.signal })
           .then((res) => (res.ok ? res.json() : null))
           .catch(() => null),
       ),
@@ -91,17 +101,31 @@ export async function fetchRemoteArt(count: number): Promise<AnimeArt[]> {
     return out;
   } catch {
     return [];
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+/**
+ * 给整批接口图各配一张同槽位的本地图。
+ * 单张接口图挂掉只退那一张，不会连累整批——预加载校验要 8 秒，拿它挡首屏太慢。
+ */
+export function withLocalFallback(batch: AnimeArt[]): AnimeArt[] {
+  return batch.map((art, i) => ({ ...art, fallback: localArt[i % localArt.length] }));
 }
 
 /**
  * 按序号取图（序号来自 lib/posts 的 postIndex，即文章在全局列表里的位置）。
  * 卡片和阅读页用同一个序号，所以同一篇文章两处看到的是同一张图；
  * 序号互不相同，所以只要文章数不超过图片数，列表里就不会出现重复的图。
+ *
+ * 返回值是三态：null = 图集还没决定好，调用方留白（先画一张再换掉就是「图片中途变」，
+ * 正是要避免的）；undefined = 图集是空的，调用方退回内置 SVG；其余就是那张图。
  */
-export function pickArt(batch: AnimeArt[], index: number): AnimeArt | undefined {
+export function pickArt(batch: AnimeArt[] | null, index: number): AnimeArt | null | undefined {
+  if (!batch) return null;
   if (batch.length === 0) return undefined;
-  return batch[index % batch.length];
+  return batch[index % batch.length] ?? null;
 }
 
 /** 抽卡：从当前图集里随机取一张 */
