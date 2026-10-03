@@ -4,7 +4,8 @@ import { ArrowLeft, ArrowUpDown, BookOpen } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import BlogCard from "@/components/BlogCard";
 import Pagination from "@/components/Pagination";
-import { animeArt, pickArt } from "@/lib/anime";
+import { pickArt } from "@/lib/anime";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { postIndex } from "@/lib/posts";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
@@ -27,6 +28,7 @@ export default function BlogsPage() {
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
+  const animeArt = useAnimeArt(allPosts.length + 2);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });

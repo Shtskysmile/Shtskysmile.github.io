@@ -3,7 +3,8 @@ import { BookOpen, ArrowRight } from "lucide-react";
 import Card from "@/components/ui/Card";
 import SectionTitle from "@/components/ui/SectionTitle";
 import BlogCard from "@/components/BlogCard";
-import { animeArt, pickArt } from "@/lib/anime";
+import { pickArt } from "@/lib/anime";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { postIndex } from "@/lib/posts";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
@@ -20,6 +21,7 @@ const highlightedPosts = allPosts
   .slice(0, HOME_POST_LIMIT);
 
 export default function BlogList() {
+  const animeArt = useAnimeArt(allPosts.length + 2);
   return (
     <Card animate={false}>
       <div className="flex items-start justify-between" data-live2d-hover="article">

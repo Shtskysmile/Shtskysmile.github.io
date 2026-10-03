@@ -2,7 +2,8 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, BookOpen, Dices } from "lucide-react";
 import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
-import { animeArt, pickArt } from "@/lib/anime";
+import { pickArt } from "@/lib/anime";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { allPosts } from "@/lib/posts";
 
 const LINK_BASE =
@@ -11,6 +12,7 @@ const LINK_BASE =
 export default function NotFoundPage() {
   const location = useLocation();
   // 下标避开文章卡片（0..len-1）和分类页头图（len），拿一张别人没用到的当看板娘
+  const animeArt = useAnimeArt(allPosts.length + 2);
   const mascot = pickArt(animeArt, allPosts.length + 1);
 
   return (

@@ -1,23 +1,26 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Dices } from "lucide-react";
 import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
-import { drawArt, type AnimeArt } from "@/lib/anime";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
+import { randomArt, type AnimeArt } from "@/lib/anime";
+import { allPosts } from "@/lib/posts";
 
 const SITE_NAME = "Shtskysmile 的个人主页";
 
-/** 抽卡：每次现抽一张随机二次元插画，绕过缓存所以每抽都是新的 */
+/** 抽卡：从当前图集里随机抽一张（能连上接口时就是接口那批，否则用本地兜底图集） */
 export default function GachaPage() {
+  const batch = useAnimeArt(allPosts.length + 2);
   const [art, setArt] = useState<AnimeArt | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [count, setCount] = useState(0);
 
-  const draw = useCallback(async () => {
+  const draw = useCallback(() => {
     setLoading(true);
     setFailed(false);
-    const next = await drawArt();
+    const next = randomArt(batch);
     if (next) {
       setArt(next);
       setCount((n) => n + 1);
@@ -25,9 +28,14 @@ export default function GachaPage() {
       setFailed(true);
     }
     setLoading(false);
-  }, []);
+  }, [batch]);
 
+  // 只在挂载时抽一次：接口那批图到达后 batch 会变、draw 随之重建，
+  // 不守一下的话会再自动抽一次，计数器莫名跳一格
+  const drawnOnce = useRef(false);
   useEffect(() => {
+    if (drawnOnce.current) return;
+    drawnOnce.current = true;
     draw();
   }, [draw]);
 

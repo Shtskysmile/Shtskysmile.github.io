@@ -1,21 +1,20 @@
 import creditsData from "@content/anime.json";
 
 /**
- * 自托管的二次元插画集。
+ * 插画来源分两层：
  *
- * 为什么不用在线接口：nekos.best 及其图片 CDN 对**浏览器** User-Agent 会返回
- * Cloudflare 的 403 挑战页（实测 iPhone / Android / 桌面 Chrome 都是 403，
- * 只有脚本类的 UA 能过），表现就是手机和桌面都可能拿不到图、封面退化成渐变色块；
- * 再加一层 wsrv.nl 代理又多一个不确定的第三方。
- * 现在图片和署名都在仓库里，运行时零请求，任何网络环境都能显示。
+ * 1. **优先走在线接口**（nekos.best + wsrv.nl 缩放），能拿到更多随机图。
+ * 2. **取不到就用本地图集兜底**。本地这份是编译期就在仓库里的，
+ *    所以任何网络环境下都有图可显示，不会出现空白或色块。
  *
- * 图片是 public/images/anime/<序号>.webp（800px 宽），署名在 content/anime.json。
- * 想换图就把文件替换掉、并同步 content/anime.json 里的对应条目。
+ * 之所以必须有兜底：nekos.best 及其图片 CDN 对浏览器 User-Agent 会返回
+ * Cloudflare 的 403 挑战页（实测 iPhone / Android / 桌面 Chrome 全部 403，
+ * 只有脚本类 UA 能过），命中与否还取决于出口 IP——手机和部分桌面环境会直接拿不到图。
  */
 export interface AnimeArt {
   /** 卡片封面用 */
   src: string;
-  /** 阅读页/分类页那种大图用（同一份文件，不做二次裁剪） */
+  /** 阅读页/分类页那种大图用 */
   heroSrc: string;
   artistName: string;
   artistHref: string;
@@ -29,7 +28,20 @@ interface CreditRow {
   sourceUrl?: string;
 }
 
-export const animeArt: AnimeArt[] = (creditsData as CreditRow[]).map((row) => {
+interface RawResult {
+  url?: string;
+  artist_name?: string;
+  artist_href?: string;
+  source_url?: string;
+}
+
+const API = "https://nekos.best/api/v2/neko";
+/** 接口单次返回上限（传更大的 amount 也只给 20 张，实测过） */
+const API_PAGE = 20;
+const RESIZE_WIDTH = 800;
+
+/** 本地兜底图集：public/images/anime/<序号>.webp，署名在 content/anime.json */
+export const localArt: AnimeArt[] = (creditsData as CreditRow[]).map((row) => {
   const url = `/images/anime/${row.file}`;
   return {
     src: url,
@@ -39,6 +51,48 @@ export const animeArt: AnimeArt[] = (creditsData as CreditRow[]).map((row) => {
     sourceUrl: row.sourceUrl ?? "",
   };
 });
+
+function proxied(url: string): string {
+  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${RESIZE_WIDTH}&output=webp&q=80`;
+}
+
+function toArt(r: RawResult & { url: string }): AnimeArt {
+  const src = proxied(r.url);
+  return {
+    src,
+    heroSrc: src,
+    artistName: r.artist_name ?? "",
+    artistHref: r.artist_href ?? "",
+    sourceUrl: r.source_url ?? "",
+  };
+}
+
+/** 调接口取一批图；任何失败（含 Cloudflare 403、断网、超时）都返回空数组 */
+export async function fetchRemoteArt(count: number): Promise<AnimeArt[]> {
+  try {
+    const pages = Math.max(1, Math.ceil(count / API_PAGE));
+    const batches = await Promise.all(
+      Array.from({ length: pages }, () =>
+        fetch(`${API}?amount=${API_PAGE}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      ),
+    );
+
+    const seen = new Set<string>();
+    const out: AnimeArt[] = [];
+    for (const json of batches as Array<{ results?: RawResult[] } | null>) {
+      for (const r of json?.results ?? []) {
+        if (!r.url || seen.has(r.url)) continue;
+        seen.add(r.url);
+        out.push(toArt(r as RawResult & { url: string }));
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
 
 /**
  * 按序号取图（序号来自 lib/posts 的 postIndex，即文章在全局列表里的位置）。
@@ -50,8 +104,8 @@ export function pickArt(batch: AnimeArt[], index: number): AnimeArt | undefined 
   return batch[index % batch.length];
 }
 
-/** 抽卡：从图集里随机取一张 */
-export function drawArt(): AnimeArt | null {
-  if (animeArt.length === 0) return null;
-  return animeArt[Math.floor(Math.random() * animeArt.length)] ?? null;
+/** 抽卡：从当前图集里随机取一张 */
+export function randomArt(batch: AnimeArt[]): AnimeArt | null {
+  if (batch.length === 0) return null;
+  return batch[Math.floor(Math.random() * batch.length)] ?? null;
 }

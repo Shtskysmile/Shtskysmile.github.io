@@ -6,7 +6,8 @@ import BlogCard from "@/components/BlogCard";
 import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
-import { animeArt, pickArt } from "@/lib/anime";
+import { pickArt } from "@/lib/anime";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { postIndex } from "@/lib/posts";
 import Pagination from "@/components/Pagination";
 import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
@@ -30,6 +31,7 @@ export default function CategoryPage() {
   const category = BLOG_CATEGORIES.find((c) => c.id === categoryId);
   const [searchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
+  const animeArt = useAnimeArt(allPosts.length + 2);
 
   // category 取自常量数组，同一个 id 每次渲染都是同一个引用，
   // 所以 posts 的引用是稳定的

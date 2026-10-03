@@ -12,7 +12,8 @@ import ArticleToc, { useArticleToc } from "@/components/ArticleToc";
 import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
-import { animeArt, pickArt } from "@/lib/anime";
+import { pickArt } from "@/lib/anime";
+import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { postIndex } from "@/lib/posts";
 import { formatRelativeDate, formatAbsoluteDate, coverSeed } from "@/lib/blog";
 import type { BlogPost } from "@/types/content";
@@ -30,6 +31,7 @@ export default function BlogArticlePage() {
   const { items: tocItems, activeId } = useArticleToc(articleRef, markdown);
 
   const post = allPosts.find((p) => p.blogUrl.replace(/\.md$/, "") === slug);
+  const animeArt = useAnimeArt(allPosts.length + 2);
   const art = post ? pickArt(animeArt, postIndex(post.blogUrl)) : undefined;
   const siteName = "Shtskysmile 的个人主页";
   const baseUrl = "https://shtskysmile.github.io";
