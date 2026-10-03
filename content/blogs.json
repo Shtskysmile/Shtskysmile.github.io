@@ -1,5 +1,16 @@
 [
   {
+    "title": "一起来玩 Minecraft",
+    "description": "Java 版服务器 nbb.rainplay.cn:15750，加上就能进，欢迎来一起玩。",
+    "tags": ["Minecraft", "服务器", "游戏"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-03",
+    "blogUrl": "minecraft-server.md",
+    "category": "games",
+    "readingMinutes": 1,
+    "highlight": true
+  },
+  {
     "title": "哪個姩笩嫃哋過厾孒",
     "description": "①個焱暒妏哋視頻，讓亾想起 XP 姩笩哋 CF、GTASA 啝 GTAVC，還洧哪個什庅嘟芣鼡懆杺哋洎己。",
     "tags": ["随笔", "童年", "回忆"],
@@ -139,16 +150,5 @@
     "blogUrl": "reinforcement-learning-interview-review.md",
     "category": "study",
     "readingMinutes": 27
-  },
-  {
-    "title": "一起来玩 Minecraft",
-    "description": "Java 版服务器 nbb.rainplay.cn:15750，加上就能进，欢迎来一起玩。",
-    "tags": ["Minecraft", "服务器", "游戏"],
-    "author": "Shtskysmile",
-    "publishDate": "2026-10-03",
-    "blogUrl": "minecraft-server.md",
-    "category": "games",
-    "readingMinutes": 1,
-    "highlight": true
   }
 ]
