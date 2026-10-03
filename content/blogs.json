@@ -7,7 +7,8 @@
     "publishDate": "2026-10-03",
     "blogUrl": "childhood-gaming-nostalgia.md",
     "category": "life",
-    "readingMinutes": 1
+    "readingMinutes": 1,
+    "highlight": true
   },
   {
     "title": "大语言模型面试复习资料",
@@ -17,8 +18,7 @@
     "publishDate": "2026-10-02",
     "blogUrl": "llm-interview-review.md",
     "category": "study",
-    "readingMinutes": 108,
-    "highlight": true
+    "readingMinutes": 108
   },
   {
     "title": "数据结构与算法面试复习资料",
@@ -138,8 +138,7 @@
     "publishDate": "2026-10-02",
     "blogUrl": "reinforcement-learning-interview-review.md",
     "category": "study",
-    "readingMinutes": 27,
-    "highlight": true
+    "readingMinutes": 27
   },
   {
     "title": "一起来玩 Minecraft",
@@ -149,6 +148,7 @@
     "publishDate": "2026-10-03",
     "blogUrl": "minecraft-server.md",
     "category": "games",
-    "readingMinutes": 1
+    "readingMinutes": 1,
+    "highlight": true
   }
 ]
