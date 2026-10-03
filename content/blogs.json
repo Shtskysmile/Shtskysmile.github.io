@@ -7,6 +7,7 @@
     "publishDate": "2026-10-02",
     "blogUrl": "llm-interview-review.md",
     "category": "study",
+    "readingMinutes": 108,
     "readingMinutes": 106,
     "highlight": true
   },
@@ -91,16 +92,6 @@
     "readingMinutes": 6
   },
   {
-    "title": "强化学习基础面试复习资料",
-    "description": "MDP、贝尔曼方程、Q-learning、PPO 与 RLHF/DPO 的常见面试题速查。",
-    "tags": ["强化学习", "面试"],
-    "author": "Shtskysmile",
-    "publishDate": "2026-10-02",
-    "blogUrl": "reinforcement-learning-basics-interview-review.md",
-    "category": "study",
-    "readingMinutes": 7
-  },
-  {
     "title": "自然语言处理面试复习资料",
     "description": "词向量、预训练模型架构、解码策略、长文本与评估指标的常见面试题。",
     "tags": ["NLP", "面试"],
@@ -148,7 +139,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "reinforcement-learning-interview-review.md",
     "category": "study",
-    "readingMinutes": 25,
+    "readingMinutes": 27,
+    "readingMinutes": 26,
     "highlight": true
   }
 ]
