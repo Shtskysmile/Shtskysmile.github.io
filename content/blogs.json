@@ -22,53 +22,53 @@
   },
   {
     "title": "操作系统面试复习资料",
-    "description": "进程与线程、内存管理、文件与 I/O、调度与同步的常见面试题。",
+    "description": "进程与线程、内存管理、文件与 I/O、调度同步与零拷贝的常见面试题。",
     "tags": ["操作系统", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "operating-systems-interview-review.md",
     "category": "study",
-    "readingMinutes": 5
+    "readingMinutes": 7
   },
   {
     "title": "计算机网络面试复习资料",
-    "description": "TCP/IP、HTTP 演进、DNS、Cookie/Session/JWT 等常见网络面试题。",
+    "description": "TCP/IP、拥塞控制、HTTP 演进与 QUIC、DNS、Cookie/Session/JWT 等常见网络面试题。",
     "tags": ["计算机网络", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "computer-networks-interview-review.md",
     "category": "study",
-    "readingMinutes": 5
+    "readingMinutes": 6
   },
   {
     "title": "计算机组成原理面试复习资料",
-    "description": "存储层次、Cache 映射、流水线冒险、中断异常与浮点数的常见面试题。",
+    "description": "存储层次、Cache 映射与一致性、乱序执行与分支预测、中断异常与浮点数的常见面试题。",
     "tags": ["计算机组成原理", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "computer-organization-interview-review.md",
     "category": "study",
-    "readingMinutes": 3
+    "readingMinutes": 6
   },
   {
     "title": "数据库与 SQL 面试复习资料",
-    "description": "范式、索引与回表、事务隔离、锁与手写 SQL 题，文末附限时短笔练习。",
+    "description": "范式、索引与回表、事务隔离与 MVCC、日志与主从复制，以及手写 SQL 题，文末附限时短笔练习。",
     "tags": ["数据库", "SQL", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "database-sql-interview-review.md",
     "category": "study",
-    "readingMinutes": 7
+    "readingMinutes": 8
   },
   {
     "title": "软件工程面试复习资料",
-    "description": "软件生命周期、测试分层、CI/CD、代码评审与技术债的常见面试题。",
+    "description": "软件生命周期、测试分层、CI/CD、代码评审与技术债，以及智能化软件工程（LLM4SE）的常见面试题。",
     "tags": ["软件工程", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "software-engineering-interview-review.md",
     "category": "study",
-    "readingMinutes": 3
+    "readingMinutes": 5
   },
   {
     "title": "机器学习面试复习资料",
@@ -82,13 +82,13 @@
   },
   {
     "title": "深度学习面试复习资料",
-    "description": "激活函数、归一化、优化器、注意力机制与参数高效微调的常见面试题。",
+    "description": "激活函数、归一化、优化基础与优化器、注意力机制与参数高效微调的常见面试题。",
     "tags": ["深度学习", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "deep-learning-interview-review.md",
     "category": "study",
-    "readingMinutes": 5
+    "readingMinutes": 6
   },
   {
     "title": "强化学习基础面试复习资料",
@@ -131,12 +131,12 @@
     "readingMinutes": 5
   },
   {
-    "title": "线性代数与优化面试复习资料",
-    "description": "秩与特征值、SVD 与 PCA、凸优化与牛顿法的常见面试题。",
-    "tags": ["线性代数", "优化", "面试"],
+    "title": "线性代数面试复习资料",
+    "description": "秩与特征值、SVD 与 PCA、相似对角化与正交矩阵的常见面试题。",
+    "tags": ["线性代数", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
-    "blogUrl": "linear-algebra-optimization-interview-review.md",
+    "blogUrl": "linear-algebra-interview-review.md",
     "category": "study",
     "readingMinutes": 4
   },
