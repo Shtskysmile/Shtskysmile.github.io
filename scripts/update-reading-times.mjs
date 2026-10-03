@@ -37,13 +37,19 @@ for (const post of posts) {
   if (post.readingMinutes === minutes) continue;
 
   // 定点插入，不用 JSON 重新序列化——那会把 tags 这种单行数组拆成多行
+  // category 之后可能一个字段都没有（此时 readingMinutes 会成为最后一个字段，
+  // 不能带尾逗号）；已有的 readingMinutes（可能重复，历史遗留）一并吃掉
+  const escaped = post.blogUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const anchor = new RegExp(
-    `("blogUrl": "${post.blogUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}",\\n\\s*"category": "[a-z]+",\\n)`,
+    `("blogUrl": "${escaped}",\\n\\s*"category": "[a-z]+")(,?)\\n((?:\\s*"readingMinutes": \\d+,\\n)*)`,
   );
   if (!anchor.test(source)) {
     throw new Error(`找不到插入位置：${post.blogUrl}`);
   }
-  source = source.replace(anchor, `$1    "readingMinutes": ${minutes},\n`);
+  source = source.replace(anchor, (match, head, _comma, _old, offset, whole) => {
+    const isLastField = /^\s*\}/.test(whole.slice(offset + match.length));
+    return `${head},\n    "readingMinutes": ${minutes}${isLastField ? "" : ","}\n`;
+  });
 
   changed.push(`${post.blogUrl}: ${post.readingMinutes ?? "(无)"} → ${minutes}`);
 }
