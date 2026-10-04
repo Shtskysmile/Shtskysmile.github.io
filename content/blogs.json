@@ -1,5 +1,16 @@
 [
   {
+    "title": "Agent实现笔记：从 HTTP 请求到 RAG 幻觉治理与评测",
+    "description": "从裸 HTTP 请求一路手写到 RAG、记忆、迭代检索与评测：讲清 tool calling 的往返、切块与余弦检索的取舍、引用回查的三个坑，并用闭卷/开卷 A/B 对照拿出幻觉率的真实数字。",
+    "tags": ["Agentic AI", "RAG", "幻觉治理", "LLM", "评测"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-04",
+    "blogUrl": "agentic-rag-hallucination.md",
+    "category": "study",
+    "readingMinutes": 11,
+    "highlight": true
+  },
+  {
     "title": "血肉苦弱，智械飞升（一）：用中转站配置 Claude Code + DeepSeek",
     "description": "从零讲清楚 API、API Key 与 Base URL，用 CC Switch 把 DeepSeek 接进 Claude Code 和 Codex，并附上中转站的选型与风险提示。",
     "tags": ["Claude Code", "DeepSeek", "CC Switch", "API", "教程"],
