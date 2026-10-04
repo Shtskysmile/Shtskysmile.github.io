@@ -18,7 +18,8 @@
     "publishDate": "2026-10-04",
     "blogUrl": "command-code-go.md",
     "category": "study",
-    "readingMinutes": 8
+    "readingMinutes": 8,
+    "highlight": true
   },
   {
     "title": "一起来玩 Minecraft",

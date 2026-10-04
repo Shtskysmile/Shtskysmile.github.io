@@ -1,10 +1,11 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { ThemeContext } from "@/context/ThemeContext";
 import { useTheme } from "@/hooks/useTheme";
 import { useKonami } from "@/hooks/useKonami";
 import Header from "@/components/layout/Header";
 import NotFoundPage from "@/pages/NotFoundPage";
+import PageBoundary from "@/components/PageBoundary";
 import Skeleton from "@/components/ui/Skeleton";
 
 const HomePage = lazy(() => import("@/pages/HomePage"));
@@ -28,6 +29,7 @@ function PageFallback() {
 export default function App() {
   const themeState = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 深渊区域不在导航里，靠 Konami 秘籍（↑↑↓↓←→←→BA）开门
   useKonami(() => navigate("/categories/abyss"));
@@ -37,49 +39,53 @@ export default function App() {
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Suspense fallback={<PageFallback />}>
-                  <HomePage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/blogs"
-              element={
-                <Suspense fallback={<PageFallback />}>
-                  <BlogsPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/blogs/:slug"
-              element={
-                <Suspense fallback={<PageFallback />}>
-                  <BlogArticlePage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/categories/:categoryId"
-              element={
-                <Suspense fallback={<PageFallback />}>
-                  <CategoryPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/gacha"
-              element={
-                <Suspense fallback={<PageFallback />}>
-                  <GachaPage />
-                </Suspense>
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          {/* key 跟随路由：某个页面 chunk 加载失败后，切到别的路由能自动恢复，
+              不必强制刷新（刷新只是兜底手段之一） */}
+          <PageBoundary key={location.pathname}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <HomePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/blogs"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <BlogsPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/blogs/:slug"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <BlogArticlePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/categories/:categoryId"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <CategoryPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/gacha"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <GachaPage />
+                  </Suspense>
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </PageBoundary>
         </main>
       </div>
     </ThemeContext.Provider>
