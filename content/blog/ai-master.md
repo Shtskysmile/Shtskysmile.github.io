@@ -3,7 +3,7 @@
 > [!NOTE] 这个系列
 > 「血肉苦弱，智械飞升」第一篇，讲怎么把 coding agent 跑起来：用 API 的方式配置，以 Claude Code + DeepSeek 为例。
 >
-> 第二篇会写怎么用 **Claude Pro / GPT Plus 官方订阅账号**直接登录。那部分还在施工，先占个位。
+> 第二篇换成 Command-Code-GO，重点讲**网关只支持 OpenAI 协议时怎么靠 CC Switch 路由转换**。用 **Claude Pro / GPT Plus 官方订阅账号**直接登录那部分，留到后面再写。
 
 ## 一、先弄明白三样东西
 

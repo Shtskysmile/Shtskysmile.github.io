@@ -38,10 +38,12 @@ for (const post of posts) {
 
   // 定点插入，不用 JSON 重新序列化——那会把 tags 这种单行数组拆成多行
   // category 之后可能一个字段都没有（此时 readingMinutes 会成为最后一个字段，
-  // 不能带尾逗号）；已有的 readingMinutes（可能重复，历史遗留）一并吃掉
+  // 不能带尾逗号）；已有的 readingMinutes（可能重复，历史遗留）一并吃掉。
+  // 尾逗号必须是可选的：它是该条目最后一个字段时本来就没有逗号，
+  // 漏吃会在下面重新插入一条，变成重复键——JSON.parse 取后者，值会静默回退。
   const escaped = post.blogUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const anchor = new RegExp(
-    `("blogUrl": "${escaped}",\\n\\s*"category": "[a-z]+")(,?)\\n((?:\\s*"readingMinutes": \\d+,\\n)*)`,
+    `("blogUrl": "${escaped}",\\n\\s*"category": "[a-z]+")(,?)\\n((?:\\s*"readingMinutes": \\d+,?\\n)*)`,
   );
   if (!anchor.test(source)) {
     throw new Error(`找不到插入位置：${post.blogUrl}`);
