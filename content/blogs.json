@@ -1,5 +1,16 @@
 [
   {
+    "title": "从「能跑」到「可靠」：两个 Agent 应用的问题定位与改进",
+    "description": "一道工具调用循环、一道 RAG，按问题→分析→初版→改进各走一遍：循环该用什么信号退出、工具失败怎么兜底、相似度排序取反这个致命坑，以及为什么「强制引用」比分数阈值更能压住幻觉。",
+    "tags": ["Agentic AI", "RAG", "Function Calling", "幻觉治理", "LLM"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-05",
+    "blogUrl": "agent-cases-problem-and-fix.md",
+    "category": "study",
+    "readingMinutes": 9,
+    "highlight": true
+  },
+  {
     "title": "Agent实现笔记：从 HTTP 请求到 RAG 幻觉治理与评测",
     "description": "从裸 HTTP 请求一路手写到 RAG、记忆、迭代检索与评测：讲清 tool calling 的往返、切块与余弦检索的取舍、引用回查的三个坑，并用闭卷/开卷 A/B 对照拿出幻觉率的真实数字。",
     "tags": ["Agentic AI", "RAG", "幻觉治理", "LLM", "评测"],
@@ -183,5 +194,15 @@
     "blogUrl": "reinforcement-learning-interview-review.md",
     "category": "study",
     "readingMinutes": 27
+  },
+  {
+    "title": "电子科大觅食记：清水河校区周边十一家",
+    "description": "从紫荆的自选菜到西门烤鱼、天街与龙湖，清水河校区周边十一家常去的店，按场合和口味随手记。",
+    "tags": ["电子科大", "美食", "清水河", "成都"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-04",
+    "blogUrl": "uestc-food-guide.md",
+    "category": "uestc",
+    "readingMinutes": 3
   }
 ]
