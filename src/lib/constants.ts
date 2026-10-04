@@ -38,7 +38,7 @@ export const SCHOOL_EMBLEMS = [
 export const BLOG_CATEGORIES = [
   {
     id: "study",
-    name: "保研学习",
+    name: "学习",
     description: "专业课复习、面试与笔试的整理",
     colors: ["#6b7fb3", "#39466b"],
   },

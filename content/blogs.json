@@ -1,5 +1,16 @@
 [
   {
+    "title": "血肉苦弱，智械飞升（一）：用中转站配置 Claude Code + DeepSeek",
+    "description": "从零讲清楚 API、API Key 与 Base URL，用 CC Switch 把 DeepSeek 接进 Claude Code 和 Codex，并附上中转站的选型与风险提示。",
+    "tags": ["Claude Code", "DeepSeek", "CC Switch", "API", "教程"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-04",
+    "blogUrl": "ai-master.md",
+    "category": "study",
+    "readingMinutes": 7,
+    "highlight": true
+  },
+  {
     "title": "一起来玩 Minecraft",
     "description": "Java 版服务器 nbb.rainplay.cn:15750，加上就能进，欢迎来一起玩。",
     "tags": ["Minecraft", "服务器", "游戏"],
