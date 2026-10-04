@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeContext } from "@/context/ThemeContext";
 import { useTheme } from "@/hooks/useTheme";
+import { useKonami } from "@/hooks/useKonami";
 import Header from "@/components/layout/Header";
 import NotFoundPage from "@/pages/NotFoundPage";
 import Skeleton from "@/components/ui/Skeleton";
@@ -26,6 +27,10 @@ function PageFallback() {
 
 export default function App() {
   const themeState = useTheme();
+  const navigate = useNavigate();
+
+  // 深渊区域不在导航里，靠 Konami 秘籍（↑↑↓↓←→←→BA）开门
+  useKonami(() => navigate("/categories/abyss"));
 
   return (
     <ThemeContext.Provider value={themeState}>

@@ -115,6 +115,11 @@ export default function GachaPage() {
             {loading ? "抽卡中……" : "再抽一次"}
           </button>
         </div>
+
+        {/* 深渊区域的线索 */}
+        <p className="mt-6 text-center text-xs text-stone-300 dark:text-stone-600">
+          顺带一提：这个站还有更深的一层。老掌机时代的一串按键能打开它。
+        </p>
       </div>
     </>
   );

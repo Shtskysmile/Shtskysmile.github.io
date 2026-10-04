@@ -336,6 +336,10 @@ export default function BlogArticlePage() {
                   >
                     查看全部文章
                   </Link>
+                  {/* 深渊区域的线索 */}
+                  <p className="mt-3 text-xs text-stone-300 dark:text-stone-600">
+                    想看压在最底下的东西的话，试试键盘上的老式秘籍。
+                  </p>
                 </div>
               </>
             )}

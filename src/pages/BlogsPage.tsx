@@ -123,6 +123,10 @@ export default function BlogsPage() {
           >
             返回主页
           </Link>
+          {/* 深渊区域的线索：它不在导航里，只能靠 Konami 秘籍进 */}
+          <p className="mt-3 text-xs text-stone-300 dark:text-stone-600">
+            据说，把方向键按对顺序、再补上两个字母，能打开压在最底下的东西。
+          </p>
         </div>
       </div>
     </>

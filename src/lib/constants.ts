@@ -70,3 +70,10 @@ export const BLOG_CATEGORIES = [
 
 /** 分类缺省值。blogs.json 是 JSON 断言成类型的，字段漏写不会被 TS 拦下。 */
 export const DEFAULT_BLOG_CATEGORY = "study";
+
+/**
+ * 深渊区域：不进导航栏，藏成 Konami 秘籍（↑↑↓↓←→←→BA）的彩蛋。
+ * Header 渲染分类时跳过它，但分类页 /categories/abyss 与 SEO 静态页照常可用，
+ * 所以分类本身仍保留在 BLOG_CATEGORIES 里。
+ */
+export const HIDDEN_CATEGORY_ID = "abyss";

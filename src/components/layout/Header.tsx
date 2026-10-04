@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import { Dices } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import { SCHOOL_EMBLEMS, BLOG_CATEGORIES } from "@/lib/constants";
+import { SCHOOL_EMBLEMS, BLOG_CATEGORIES, HIDDEN_CATEGORY_ID } from "@/lib/constants";
 
 /** Minimum downward scroll (px) before hiding. Upward scroll shows immediately. */
 const HIDE_DELTA = 10;
@@ -123,13 +123,16 @@ export default function Header() {
                 全部文章
               </NavLink>
             </li>
-            {BLOG_CATEGORIES.map((category) => (
-              <li key={category.id}>
-                <NavLink to={`/categories/${category.id}`} className={categoryLinkClass}>
-                  {category.name}
-                </NavLink>
-              </li>
-            ))}
+            {/* 隐藏分类（深渊区域）不进导航，靠 Konami 秘籍进入 */}
+            {BLOG_CATEGORIES.filter((category) => category.id !== HIDDEN_CATEGORY_ID).map(
+              (category) => (
+                <li key={category.id}>
+                  <NavLink to={`/categories/${category.id}`} className={categoryLinkClass}>
+                    {category.name}
+                  </NavLink>
+                </li>
+              ),
+            )}
           </ul>
         </nav>
 

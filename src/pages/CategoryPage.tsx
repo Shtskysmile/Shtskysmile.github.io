@@ -11,7 +11,7 @@ import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { useCoverArt } from "@/hooks/useCoverArt";
 import { postIndex } from "@/lib/posts";
 import Pagination from "@/components/Pagination";
-import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
+import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY, HIDDEN_CATEGORY_ID } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 
@@ -143,6 +143,12 @@ export default function CategoryPage() {
             {category.description}
             {posts.length > 0 && ` · 共 ${posts.length} 篇`}
           </p>
+          {/* 只有靠秘籍进来的隐藏分类才显示这句 */}
+          {category.id === HIDDEN_CATEGORY_ID && (
+            <p className="mt-2 text-xs text-stone-400 dark:text-stone-500">
+              口令生效了。欢迎来到网站的最底层——这里暂时还什么都没埋。
+            </p>
+          )}
         </div>
 
         {posts.length === 0 ? (
