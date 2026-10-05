@@ -1,13 +1,13 @@
 [
   {
-    "title": "从「能跑」到「可靠」：两个 Agent 应用的问题定位与改进",
-    "description": "一道工具调用循环、一道 RAG，按问题→分析→初版→改进各走一遍：循环该用什么信号退出、工具失败怎么兜底、相似度排序取反这个致命坑，以及为什么「强制引用」比分数阈值更能压住幻觉。",
-    "tags": ["Agentic AI", "RAG", "Function Calling", "幻觉治理", "LLM"],
+    "title": "从「能跑」到「可靠」：三个 Agent 应用的问题定位与改进",
+    "description": "工具调用循环、RAG、带长期记忆的多轮助理各一题，按问题→分析→初版→改进走一遍：循环用什么信号退出、工具失败怎么兜底、相似度排序取反这个致命坑、裁剪怎么不劈开结构、记忆为什么该注入而非检索。",
+    "tags": ["Agentic AI", "RAG", "Function Calling", "记忆", "幻觉治理", "LLM"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-05",
     "blogUrl": "agent-cases-problem-and-fix.md",
     "category": "study",
-    "readingMinutes": 9,
+    "readingMinutes": 14,
     "highlight": true
   },
   {
