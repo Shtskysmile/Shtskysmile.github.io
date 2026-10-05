@@ -7,7 +7,7 @@
     "publishDate": "2026-10-05",
     "blogUrl": "agent-cases-problem-and-fix.md",
     "category": "study",
-    "readingMinutes": 14,
+    "readingMinutes": 21,
     "highlight": true
   },
   {
@@ -18,7 +18,7 @@
     "publishDate": "2026-10-04",
     "blogUrl": "agentic-rag-hallucination.md",
     "category": "study",
-    "readingMinutes": 11,
+    "readingMinutes": 20,
     "highlight": true
   },
   {
@@ -203,6 +203,6 @@
     "publishDate": "2026-10-04",
     "blogUrl": "uestc-food-guide.md",
     "category": "uestc",
-    "readingMinutes": 3
+    "readingMinutes": 1
   }
 ]
