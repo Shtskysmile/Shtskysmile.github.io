@@ -12,7 +12,7 @@ import blogsData from "@content/blogs.json";
 const allPosts = blogsData as BlogPost[];
 
 /** 首页只列精选，并且硬性截断——避免以后又把首页撑成一长串 */
-const HOME_POST_LIMIT = 4;
+const HOME_POST_LIMIT = 8;
 
 /** Highlighted posts, sorted newest-first */
 const highlightedPosts = allPosts

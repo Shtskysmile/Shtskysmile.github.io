@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
 import Grid from "@/components/layout/Grid";
 import ProfileCard from "@/components/ProfileCard";
-import CertificateCard from "@/components/CertificateCard";
 import SitePurpose from "@/components/SitePurpose";
 import BackToTop from "@/components/BackToTop";
 import Skeleton from "@/components/ui/Skeleton";
@@ -76,12 +75,7 @@ export default function HomePage() {
       </Helmet>
 
       <Grid
-        left={
-          <>
-            <ProfileCard />
-            <CertificateCard />
-          </>
-        }
+        left={<ProfileCard />}
         right={
           <>
             <SitePurpose />
