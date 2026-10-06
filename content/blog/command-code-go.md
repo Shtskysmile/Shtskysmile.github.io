@@ -1,13 +1,13 @@
-# 血肉苦弱，智械飞升（二）：用 Command-Code-GO 白嫖 deepseek-flash
+# 血肉苦弱，智械飞升（二）：用 Command-Code-GO 低价获取 deepseek-flash 额度
 
 > [!NOTE] 这个系列
 > 第二篇。第一篇讲的是「用 API 把 coding agent 跑起来」——API / API Key / Base URL 是什么，怎么用 CC Switch 把 DeepSeek 接进 Claude Code。
 >
-> 这一篇换个供应商：Command-Code-GO。它便宜到不像话，但它只给 OpenAI 协议，所以得让 CC Switch 做一层路由转换。
+> 这一篇换个供应商：Command-Code-GO。它便宜得多，但只提供 OpenAI 协议，需要通过 CC Switch 做一层路由转换。
 
 ## 一、先说为什么便宜
 
-Command Code 是个专门做「开源模型 coding agent」的服务。它的定价你可以自己去 https://commandcode.ai/pricing 核，这几个数字是我 2026-10-04 从官方页面抓的：
+Command Code 是一个面向「开源模型 coding agent」的服务。定价可自行核对 https://commandcode.ai/pricing，下面几个数字取自 2026-10-04 的官方页面：
 
 | 套餐 | 月付 | 拿到多少额度 | 倍数 |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ Command Code 是个专门做「开源模型 coding agent」的服务。它的定
 
 这就是标题里「大量 token」的来源——不是漏洞，是它自己在做促销。
 
-价格随时会变。上面这些是我写这篇文章当天的截图数据，你下单前一定自己再核一遍，别拿我这篇当合同。
+价格随时会变。上面这些是写这篇文章当天的截图数据，下单前请自行核对，不要直接以本文为准。
 
 ## 二、为什么不能直接把地址填进 Claude Code
 
@@ -51,7 +51,7 @@ Claude Code 说的是 Anthropic Messages 协议。它只认一个路径 `{Base U
 
 看第三行，它确实有原生的 Anthropic 端点。所以问题不在端点，在模型。
 
-我把它的模型列表拉下来看了一眼（`GET https://api.commandcode.ai/provider/v1/models`，这个接口不用鉴权），每个模型都挂着一个 `supported_endpoints` 字段，写着它认哪些端：
+模型列表可直接拉取（`GET https://api.commandcode.ai/provider/v1/models`，该接口无需鉴权），每个模型都带一个 `supported_endpoints` 字段，标明它接受哪些端点：
 
 ```
 claude-sonnet-5-5               supported_endpoints=['/messages']
@@ -76,13 +76,13 @@ Model "deepseek/deepseek-v4.1-flash" is not supported on this endpoint.
 Use /provider/v1/chat/completions for OpenAI and OSS models.
 ```
 
-这段报错不是我编的。我配这篇教程的时候，我这个会话自己就撞了一次——当时我想压缩一下对话上下文，用的正是 `deepseek/deepseek-v4.1-flash`，结果 `/compact` 直接 400 挂掉，就是上面这句。
+这段报错并非虚构。配置这篇教程时，本会话中就触发过一次——当时尝试压缩对话上下文，用的正是 `deepseek/deepseek-v4.1-flash`，`/compact` 直接以 400 失败，报的就是上面这句。
 
 便宜的是 deepseek，而 deepseek 不认 Claude Code 的原生协议。这就是必须要路由的原因。
 
 ## 三、路由在中间干了什么
 
-CC Switch 会在本机起一个代理。Claude Code 以为自己在跟 Anthropic 说话，其实是在跟 CC Switch 说话，由 CC Switch 负责翻译：
+CC Switch 会在本机启动一个代理。Claude Code 以为自己在跟 Anthropic 通信，实际是在跟 CC Switch 通信，由后者负责翻译：
 
 ```
 Claude Code
@@ -115,9 +115,9 @@ https://api.commandcode.ai/provider/v1/chat/completions
 | API Key | Studio 里生成的那个 |
 | 请求地址 | `https://api.commandcode.ai/provider/v1` |
 
-请求地址填到 `/provider/v1` 为止，别画蛇添足加上 `/responses` 或 `/chat/completions`，也不要留尾斜杠（截图里那行黄色提示就是在说这个）。CC Switch 会按上游格式自己把后面的路径补上。
+请求地址填到 `/provider/v1` 为止，不要再追加 `/responses` 或 `/chat/completions`，也不要留尾斜杠（截图中的黄色提示即指此）。CC Switch 会按上游格式自行补全后续路径。
 
-对照一下第一篇：DeepSeek 官方的 `https://api.deepseek.com/anthropic` 是原生 Anthropic 端点，CC Switch 直接透传就行，压根不需要路由。这一篇的供应商不是，所以多了一步。
+对照第一篇：DeepSeek 官方的 `https://api.deepseek.com/anthropic` 是原生 Anthropic 端点，CC Switch 直接透传即可，完全不需要路由。这一篇的供应商不是，所以多了一步。
 
 ## 五、配模型映射
 
@@ -164,9 +164,9 @@ claude
 
 ## 八、下面几篇
 
-- （三）用订阅账号登录：如果你手上已经有 Claude Pro 或 ChatGPT Plus，其实不用 API 也不用中转站，直接登录官方客户端就行，额度算在订阅里。这篇还没写。
+- （三）用订阅账号登录：如果手上已经有 Claude Pro 或 ChatGPT Plus，不需要 API，也不需要中转站，直接登录官方客户端即可，额度算在订阅里。这篇还没写。
 - 也许还会写写同一个网关里怎么用 Kimi、GLM 这些，思路跟这篇完全一样，换模型名就行。
 
 ---
 
-最后再说一遍：文里的价格、套餐、模型名、加成活动，都是 2026-10-04 从 https://commandcode.ai 抓的，会变。真要花钱之前，自己去官网核对一遍。
+最后说明：文中的价格、套餐、模型名、加成活动均取自 2026-10-04 的 https://commandcode.ai，会发生变化。付费前请自行到官网核对。

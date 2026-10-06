@@ -36,7 +36,7 @@ Base URL 就是"这个请求发给哪台服务器"。官方 Claude 的 Base URL 
 
 DeepSeek 也提供 Anthropic 兼容端点。把 Base URL 改成 `https://api.deepseek.com/anthropic`，同一个 Claude Code 就在跟 DeepSeek 说话了。
 
-所有"中转站"的魔法，本质就是这个：给你一个域名和一个 Key，让你拿官方客户端去连它。
+所有"中转站"的机制，本质就是这个：给你一个域名和一个 Key，让你拿官方客户端去连它。
 
 ## 二、中转站是什么，以及它的代价
 
@@ -49,7 +49,7 @@ DeepSeek 也提供 Anthropic 兼容端点。把 Base URL 改成 `https://api.dee
 > - 中转站基本都不符合 Anthropic / OpenAI 的服务条款，官方不允许转售额度。账号被封、额度清零、Key 失效都可能发生，而且没有申诉的地方。
 > - 小站跑路是常态。用多少充多少，别一次充一年的量。
 > - 别碰"共享账号""拼车名额"这类东西，把主账号密码交出去，风险和收益完全不成比例。
-> - 下文出现的具体站点是我在用的，不是推荐，我也没法替它们担保。
+> - 下文出现的具体站点为个人在用，不构成推荐，也无法为其提供担保。
 
 ## 三、要装什么
 
@@ -62,9 +62,9 @@ DeepSeek 也提供 Anthropic 兼容端点。把 Base URL 改成 `https://api.dee
 | Claude Desktop | Anthropic 的桌面客户端 | https://claude.ai/download |
 | ChatGPT Desktop | OpenAI 的桌面客户端 | <https://developer.aliyun.com/article/1754654> |
 
-ChatGPT Desktop 这一栏要单独说一句：官方只走微软商城，国内打不开，所以上面给的是第三方转载的安装包。从非官方渠道下安装包，装之前自己核对一下来源，别随手双击。
+ChatGPT Desktop 这一栏要单独说一句：官方只走微软商城，国内打不开，所以上面给的是第三方转载的安装包。从非官方渠道获取安装包，安装前应核对来源，不要直接双击运行。
 
-CC Switch 是这个流程的枢纽。Claude Code、Codex 这些 CLI 的配置散落在各自的文件里（`~/.claude/settings.json`、`~/.codex/config.toml`），手改容易写错，换供应商时还要改好几处。CC Switch 把它们收进一个界面：配一次，一键切。
+CC Switch 是这个流程的核心工具。Claude Code、Codex 这些 CLI 的配置散落在各自的文件里（`~/.claude/settings.json`、`~/.codex/config.toml`），手改容易写错，换供应商时还要改好几处。CC Switch 把它们收进一个界面，配置一次，之后一键切换。
 
 ## 四、装 Node.js
 
@@ -100,7 +100,7 @@ npm -v
 ![CC Switch 的新增供应商表单，依次是供应商名称、备注、官网链接、API Key、请求地址](/images/blog/ai-master/01-provider.png)
 
 - 供应商名称：随便写，自己认得出就行，比如 `DeepSeek`
-- 备注：随手记一句，以后切供应商的时候不至于搞混
+- 备注：可简要记录用途，切换供应商时便于区分
 - 官网链接：`https://platform.deepseek.com`
 - API Key：上一步复制的那个
 - 请求地址：`https://api.deepseek.com/anthropic`
@@ -133,7 +133,7 @@ Claude Code 内部是按档位请求模型的：日常干活走 Sonnet 档，轻
 claude
 ```
 
-就这一条命令，没有别的步骤。第一次启动它会问你工作目录和权限档位，先把权限收着点，确认它没在乱改文件，再放开。
+只有这一条命令，没有其他步骤。首次启动会询问工作目录和权限档位。建议先收紧权限，确认它没有误改文件后再放开。
 
 给 Codex 配的话同理，命令换成 `codex`。
 
@@ -148,10 +148,10 @@ claude
 
 充值是去 <https://catfk.com/shop/BAGD1TL7>。
 
-再说一遍：这几个地址是我自己在用，不是推荐。第二节讲的稳定性、跑路、数据经手风险，在这里同样适用，建议小额试水。
+再说一次：这几个地址为个人在用，不构成推荐。第二节讲的稳定性、跑路、数据经手风险，在这里同样适用，建议小额试水。
 
 ## 十一、用订阅账号登录
 
-这一篇讲的是"用 API 跑起来"。如果你手上已经有 Claude Pro 或 ChatGPT Plus 订阅，其实不需要 API，也不需要中转站——直接用订阅账号登录官方客户端就行，额度算在订阅里，不用另外按量计费。
+这一篇讲的是"用 API 跑起来"。如果手上已经有 Claude Pro 或 ChatGPT Plus 订阅，则不需要 API，也不需要中转站——直接用订阅账号登录官方客户端即可，额度算在订阅里，不用另外按量计费。
 
-这部分还没写完。买 GPT Plus 的话，我目前知道的是 <https://www.aivora.cn>，我自己没在那儿买过，不做担保。等我真的走通一遍再补上来。
+这部分还没写完。GPT Plus 目前已知的购买渠道是 <https://www.aivora.cn>，本人未在该处购买过，不做担保。走通之后再补上来。

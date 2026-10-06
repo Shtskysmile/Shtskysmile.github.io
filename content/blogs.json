@@ -55,14 +55,14 @@
     "highlight": true
   },
   {
-    "title": "血肉苦弱，智械飞升（二）：用 Command-Code-GO 白嫖 deepseek-flash",
+    "title": "血肉苦弱，智械飞升（二）：用 Command-Code-GO 低价获取 deepseek-flash 额度",
     "description": "为什么便宜的中转网关只给 OpenAI 协议，以及如何让 CC Switch 开路由做协议转换，把 deepseek-flash 接进 Claude Code。",
     "tags": ["Claude Code", "CC Switch", "DeepSeek", "Command Code", "教程"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-04",
     "blogUrl": "command-code-go.md",
     "category": "study",
-    "readingMinutes": 8,
+    "readingMinutes": 7,
     "highlight": true
   },
   {
