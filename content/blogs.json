@@ -1,5 +1,27 @@
 [
   {
+    "title": "防护的层级与性质：一个带工具助理的安全改造",
+    "description": "第五道 Agent 练习题：读笔记、做计算、发邮件三类缺陷对应确定性、概率性、人在环三类防护。用消融实验说明数据包裹的效果为何测不出，讲清审批为何属于编排层而非工具，以及用户反馈为何必须走 user 通道。",
+    "tags": ["Agentic AI", "提示注入", "AST", "工具调用", "安全", "LLM"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-06",
+    "blogUrl": "agent-tool-security-layering.md",
+    "category": "study",
+    "readingMinutes": 11,
+    "highlight": true
+  },
+  {
+    "title": "谁负责补召回：把单轮检索改造为 ReAct 的取舍",
+    "description": "资料检索助手的第四题：先证明缺陷在检索而非取 top-1，再回答召回责任交给模型还是交给检索本身。给出切块与余弦检索、出处与分数回传、ReAct 循环的实现，并用工具调用 trace 与阈值标定验证。",
+    "tags": ["Agentic AI", "RAG", "ReAct", "Embedding", "幻觉治理", "LLM"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-06",
+    "blogUrl": "agent-react-retrieval-design.md",
+    "category": "study",
+    "readingMinutes": 10,
+    "highlight": true
+  },
+  {
     "title": "从「能跑」到「可靠」：三个 Agent 应用的问题定位与改进",
     "description": "工具调用循环、RAG、带长期记忆的多轮助理各一题，按问题→分析→初版→改进走一遍：循环用什么信号退出、工具失败怎么兜底、相似度排序取反这个致命坑、裁剪怎么不劈开结构、记忆为什么该注入而非检索。",
     "tags": ["Agentic AI", "RAG", "Function Calling", "记忆", "幻觉治理", "LLM"],
@@ -7,7 +29,7 @@
     "publishDate": "2026-10-05",
     "blogUrl": "agent-cases-problem-and-fix.md",
     "category": "study",
-    "readingMinutes": 21,
+    "readingMinutes": 25,
     "highlight": true
   },
   {
