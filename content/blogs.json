@@ -1,13 +1,13 @@
 [
   {
-    "title": "从「能跑」到「可靠」：七个项目的问题定位与改进",
-    "description": "七个 Agent 项目的阶段性实践与问题复盘：涵盖工具调用、产品手册 RAG、小规模与规模化记忆、多轮检索、安全审批及评测，归纳五类失效模式与五层防线。",
-    "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "LLM 评测", "LLM"],
+    "title": "从「能跑」到「可靠」：八个项目的问题定位与改进",
+    "description": "八个 Agent 项目的阶段性实践与问题复盘：涵盖工具调用、RAG、记忆、多轮检索、工具安全、问答质量与对抗性评测，归纳五类失效模式和五层防线。",
+    "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "对抗性评测", "LLM 评测", "LLM"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-07",
     "blogUrl": "agent-cases-problem-and-fix.md",
     "category": "study",
-    "readingMinutes": 56,
+    "readingMinutes": 60,
     "highlight": true
   },
   {
