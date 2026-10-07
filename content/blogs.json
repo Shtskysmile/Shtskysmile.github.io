@@ -7,7 +7,7 @@
     "publishDate": "2026-10-07",
     "blogUrl": "agent-cases-problem-and-fix.md",
     "category": "study",
-    "readingMinutes": 52,
+    "readingMinutes": 56,
     "highlight": true
   },
   {
@@ -64,6 +64,16 @@
     "category": "life",
     "readingMinutes": 1,
     "highlight": true
+  },
+  {
+    "title": "～哦耶耶！",
+    "description": "一组关于时间、朋友和痛快歌唱的歌词，配六张同一角色插画。",
+    "tags": ["随笔", "歌词", "日常"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-07",
+    "blogUrl": "oh-yeye.md",
+    "category": "life",
+    "readingMinutes": 1
   },
   {
     "title": "大语言模型面试复习资料",
