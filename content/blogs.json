@@ -1,13 +1,13 @@
 [
   {
-    "title": "从「能跑」到「可靠」：五个 Agent 应用的问题定位与改进",
-    "description": "五道 Agent 练习题：客服助手的循环退出、产品手册问答的检索方向、带记忆助理的窗口裁剪、资料检索助手的多轮召回、带工具助理的防护分层。按问题→分析→初版→改进走一遍，末尾归纳失效的四类模式与五层防线。",
-    "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "LLM"],
+    "title": "从「能跑」到「可靠」：六个 Agent 应用的问题定位与改进",
+    "description": "六道 Agent 练习题：客服助手的循环退出、产品手册问答的检索方向、带记忆助理的窗口裁剪、资料检索助手的多轮召回、带工具助理的防护分层、问答质量评测的判据与忠实度。按问题→分析→初版→改进走一遍，末尾归纳失效的五类模式与五层防线。",
+    "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "LLM 评测", "LLM"],
     "author": "Shtskysmile",
-    "publishDate": "2026-10-05",
+    "publishDate": "2026-10-07",
     "blogUrl": "agent-cases-problem-and-fix.md",
     "category": "study",
-    "readingMinutes": 42,
+    "readingMinutes": 52,
     "highlight": true
   },
   {
