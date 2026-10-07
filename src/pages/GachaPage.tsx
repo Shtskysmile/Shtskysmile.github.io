@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Dices } from "lucide-react";
+import ImagePreview from "@/components/ImagePreview";
 import AnimeCover from "@/components/AnimeCover";
 import ArtCredit from "@/components/ArtCredit";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
@@ -90,7 +91,15 @@ export default function GachaPage() {
 
         <div className="relative mt-5 aspect-[3/4] w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-100 shadow-sm dark:border-stone-700 dark:bg-stone-900">
           {cover.art ? (
-            <AnimeCover art={cover.art} src={cover.art.heroSrc} onError={cover.onError} />
+            <ImagePreview
+              src={cover.art.heroSrc}
+              downloadSrc={cover.art.originalSrc}
+              alt="抽卡插画"
+              filename="抽卡插画"
+              className="absolute inset-0 h-full w-full"
+            >
+              <AnimeCover art={cover.art} src={cover.art.heroSrc} onError={cover.onError} />
+            </ImagePreview>
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-sm text-stone-500 dark:text-stone-400">
               {failed ? "图集里还没有图。" : "正在抽……"}

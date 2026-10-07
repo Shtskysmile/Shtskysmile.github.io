@@ -145,6 +145,128 @@ input[type="submit"],
   animation: live2d-wiggle 0.55s ease-in-out;
 }
 
+@keyframes image-preview-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes image-preview-loading-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes image-preview-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes image-preview-prayer-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes image-preview-prayer-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.image-preview-dialog-fit[open] .image-preview-content {
+  animation: image-preview-enter 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.image-preview-dialog-loading[open] .image-preview-content {
+  animation: image-preview-loading-enter 180ms ease-out both;
+}
+
+.image-preview-prayer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.image-preview-prayer-seal {
+  position: relative;
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+}
+
+.image-preview-prayer-seal::before,
+.image-preview-prayer-seal::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(255 255 255 / 0.24);
+  border-radius: 50%;
+  content: "";
+  animation: image-preview-prayer-orbit 4s linear infinite;
+}
+
+.image-preview-prayer-seal::before {
+  border-top-color: rgb(191 219 254 / 0.9);
+  border-right-color: transparent;
+}
+
+.image-preview-prayer-seal::after {
+  inset: 0.4rem;
+  border-style: dashed;
+  border-color: rgb(191 219 254 / 0.55);
+  animation-direction: reverse;
+  animation-duration: 7s;
+}
+
+.image-preview-prayer-glow {
+  position: absolute;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(191 219 254 / 0.75), transparent 72%);
+  filter: blur(0.25rem);
+  animation: image-preview-prayer-pulse 1.8s ease-in-out infinite;
+}
+
+.image-preview-prayer-icon {
+  position: relative;
+  color: #bfdbfe;
+  filter: drop-shadow(0 0 0.35rem rgb(191 219 254 / 0.65));
+}
+
+.image-preview-prayer-label {
+  color: rgb(250 250 249 / 0.9);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 0.8rem rgb(191 219 254 / 0.4);
+}
+
+.image-preview-dialog::backdrop {
+  animation: image-preview-backdrop-enter 220ms ease-out both;
+}
+
 /* ── 内容面板 ── */
 /* 整页背景是暗化的风景图，标题/正文直接铺在图上对比度不够，
    所以列表页与阅读页的主内容都垫一层半透明面板。 */

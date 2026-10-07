@@ -16,6 +16,8 @@ export interface AnimeArt {
   src: string;
   /** 阅读页/分类页那种大图用 */
   heroSrc: string;
+  /** API 返回的原图地址，用于下载高分辨率版本 */
+  originalSrc?: string;
   artistName: string;
   artistHref: string;
   sourceUrl: string;
@@ -69,6 +71,7 @@ function toArt(r: RawResult & { url: string }): AnimeArt {
   return {
     src,
     heroSrc: src,
+    originalSrc: r.url,
     artistName: r.artist_name ?? "",
     artistHref: r.artist_href ?? "",
     sourceUrl: r.source_url ?? "",

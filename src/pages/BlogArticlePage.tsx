@@ -12,6 +12,7 @@ import ArticleToc, { useArticleToc } from "@/components/ArticleToc";
 import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
+import ImagePreview from "@/components/ImagePreview";
 import { pickArt } from "@/lib/anime";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { useCoverArt } from "@/hooks/useCoverArt";
@@ -284,13 +285,20 @@ export default function BlogArticlePage() {
 
                 {/* 封面优先级：手动配的图 > 随机二次元图 > 内置 SVG */}
                 {post.thumbnail ? (
-                  <img
+                  <ImagePreview
                     src={`/images/blog/${post.thumbnail}`}
                     alt={post.title}
-                    width={800}
-                    height={400}
-                    className="mb-8 w-full rounded-xl object-cover shadow-sm"
-                  />
+                    filename={post.blogUrl.replace(/\.md$/, "")}
+                    className="mb-8 w-full overflow-hidden rounded-xl shadow-sm"
+                  >
+                    <img
+                      src={`/images/blog/${post.thumbnail}`}
+                      alt=""
+                      width={800}
+                      height={400}
+                      className="w-full rounded-xl object-cover"
+                    />
+                  </ImagePreview>
                 ) : art === null ? (
                   // 图集还没决定好：先留白，别画一张再换掉
                   <div
@@ -301,7 +309,15 @@ export default function BlogArticlePage() {
                   <div className="relative mb-2 aspect-[16/9] w-full overflow-hidden rounded-xl shadow-sm">
                     {/* relative 不能省：AnimeCover 的模糊垫底是 absolute inset-0，
                         容器不是定位元素的话它会以视口为参照，盖住整篇文章 */}
-                    <AnimeCover art={cover.art} src={cover.art.heroSrc} onError={cover.onError} />
+                    <ImagePreview
+                      src={cover.art.heroSrc}
+                      downloadSrc={cover.art.originalSrc}
+                      alt={`${post.title} 封面`}
+                      filename={post.blogUrl.replace(/\.md$/, "")}
+                      className="absolute inset-0 h-full w-full"
+                    >
+                      <AnimeCover art={cover.art} src={cover.art.heroSrc} onError={cover.onError} />
+                    </ImagePreview>
                   </div>
                 ) : (
                   <CategoryCover
@@ -310,9 +326,7 @@ export default function BlogArticlePage() {
                     className="mb-8 h-auto w-full rounded-xl shadow-sm"
                   />
                 )}
-                {!post.thumbnail && cover.art && (
-                  <ArtCredit art={cover.art} className="mb-8" />
-                )}
+                {!post.thumbnail && cover.art && <ArtCredit art={cover.art} className="mb-8" />}
 
                 {/* Article content */}
                 <article
