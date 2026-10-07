@@ -1,7 +1,7 @@
 [
   {
-    "title": "从「能跑」到「可靠」：六个 Agent 应用的问题定位与改进",
-    "description": "六道 Agent 练习题：客服助手的循环退出、产品手册问答的检索方向、带记忆助理的窗口裁剪、资料检索助手的多轮召回、带工具助理的防护分层、问答质量评测的判据与忠实度。按问题→分析→初版→改进走一遍，末尾归纳失效的五类模式与五层防线。",
+    "title": "从「能跑」到「可靠」：六个项目的问题定位与改进",
+    "description": "六个 Agent 项目的阶段性实践与问题复盘：涵盖客服助手的循环退出、产品手册问答、记忆与检索、安全审批及评测，归纳失效模式和改进思路。",
     "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "LLM 评测", "LLM"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-07",
@@ -12,7 +12,7 @@
   },
   {
     "title": "Agent实现笔记：从 HTTP 请求到 RAG 幻觉治理与评测",
-    "description": "从裸 HTTP 请求一路手写到 RAG、记忆、迭代检索与评测：讲清 tool calling 的往返、切块与余弦检索的取舍、引用回查的三个坑，并用闭卷/开卷 A/B 对照拿出幻觉率的真实数字。",
+    "description": "从裸 HTTP 请求到 RAG、记忆、迭代检索与评测：手写实现 tool calling、切块、余弦检索和引用回查，梳理各组件设计与验证方法。",
     "tags": ["Agentic AI", "RAG", "幻觉治理", "LLM", "评测"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-04",
