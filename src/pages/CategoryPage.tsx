@@ -6,6 +6,7 @@ import BlogCard from "@/components/BlogCard";
 import CategoryCover from "@/components/CategoryCover";
 import ArtCredit from "@/components/ArtCredit";
 import AnimeCover from "@/components/AnimeCover";
+import ImagePreview from "@/components/ImagePreview";
 import { pickArt } from "@/lib/anime";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { useCoverArt } from "@/hooks/useCoverArt";
@@ -116,11 +117,19 @@ export default function CategoryPage() {
           />
         ) : heroCover.art ? (
           <div className="relative mb-2 aspect-[3/1] w-full overflow-hidden rounded-xl shadow-sm">
-            <AnimeCover
-              art={heroCover.art}
+            <ImagePreview
               src={heroCover.art.heroSrc}
-              onError={heroCover.onError}
-            />
+              downloadSrc={heroCover.art.originalSrc}
+              alt={`${category.name} 分类头图`}
+              filename={`${category.id}-cover`}
+              className="absolute inset-0 h-full w-full"
+            >
+              <AnimeCover
+                art={heroCover.art}
+                src={heroCover.art.heroSrc}
+                onError={heroCover.onError}
+              />
+            </ImagePreview>
             <ArtCredit
               art={heroCover.art}
               variant="overlay"
