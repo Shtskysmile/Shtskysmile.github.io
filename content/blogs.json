@@ -5,7 +5,7 @@
     "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "对抗性评测", "LLM 评测", "LLM"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-07",
-    "blogUrl": "agent-cases-problem-and-fix.md",
+    "blogUrl": "agent-projects-failure-analysis.md",
     "category": "study",
     "readingMinutes": 60,
     "highlight": true
@@ -16,7 +16,7 @@
     "tags": ["Agentic AI", "RAG", "幻觉治理", "LLM", "评测"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-04",
-    "blogUrl": "agentic-rag-hallucination.md",
+    "blogUrl": "agent-implementation-notes.md",
     "category": "study",
     "readingMinutes": 20,
     "highlight": true
@@ -234,5 +234,25 @@
     "blogUrl": "freshman-laptop-guide.md",
     "category": "uestc",
     "readingMinutes": 3
+  },
+  {
+    "title": "新电脑玩什么：十个值得入坑的 Steam 端游",
+    "description": "从求生之路 2、死亡细胞到小丑牌和严阵以待，十个适合大学新生、能跟室友一起玩的 Steam 端游，附各自的上手门槛。",
+    "tags": ["Steam", "游戏推荐", "联机", "PC 游戏", "新生"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-15",
+    "blogUrl": "pc-game-picks.md",
+    "category": "games",
+    "readingMinutes": 2
+  },
+  {
+    "title": "越长城与金盾",
+    "description": "一份不存在的国策树：从「邻人皆通」到「今日无事发生」，以及一次真正的选择。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-15",
+    "blogUrl": "beyond-the-wall.md",
+    "category": "abyss",
+    "readingMinutes": 2
   }
 ]

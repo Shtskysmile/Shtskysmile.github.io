@@ -50,7 +50,7 @@ export const BLOG_CATEGORIES = [
   },
   {
     id: "games",
-    name: "游戏",
+    name: "娱乐天堂",
     description: "玩过的、在玩的",
     colors: ["#8f7ec4", "#463572"],
   },

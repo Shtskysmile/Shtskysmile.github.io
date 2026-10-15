@@ -184,7 +184,7 @@ function buildPage({ title, description, url, image, type, extra }) {
 const CATEGORIES = [
   { id: "study", name: "学习", description: "专业课复习、面试与笔试的整理" },
   { id: "life", name: "日常生活", description: "随笔与记录" },
-  { id: "games", name: "游戏", description: "玩过的、在玩的" },
+  { id: "games", name: "娱乐天堂", description: "玩过的、在玩的" },
   { id: "abyss", name: "深渊区域", description: "压在底下的东西" },
   { id: "uestc", name: "电子科大专区", description: "成电相关的记录与经验" },
 ];
