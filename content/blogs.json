@@ -274,5 +274,55 @@
     "blogUrl": "provisions.md",
     "category": "abyss",
     "readingMinutes": 4
+  },
+  {
+    "title": "塞外最大的图书馆",
+    "description": "塞外纪事之四：不设门房，也不查文凭。同一件事有几十种写法，最难的是分清哪一页昨夜才被人添上去。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "the-great-library.md",
+    "category": "abyss",
+    "readingMinutes": 3
+  },
+  {
+    "title": "特立格拉姆大集市",
+    "description": "塞外纪事之五：不划地界、不报姓名，摊子多到数不清。什么都有，也因此鱼龙混杂，买卖自负。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "the-bazaar.md",
+    "category": "abyss",
+    "readingMinutes": 3
+  },
+  {
+    "title": "吉特工会",
+    "description": "塞外纪事之六：旷野西边有个工会，不设门槛、不收会费。墙上只挂一条会规，拦的不是你拿走，是你只拿走。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "git-guild.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "不收门票的歌唱家",
+    "description": "塞外纪事之七：没有人见过她的样子，她只在旷野各处唱歌。她不收钱，只收你一点耐性。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "the-singer.md",
+    "category": "abyss",
+    "readingMinutes": 3
+  },
+  {
+    "title": "博学健谈的四位姑娘",
+    "description": "塞外纪事之八：旷野深处有座凉亭，常年坐着四位姑娘。都博学，都健谈，只是脾气各不相同，其中一位还不接见塞内人。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "the-four-sisters.md",
+    "category": "abyss",
+    "readingMinutes": 5
   }
 ]
