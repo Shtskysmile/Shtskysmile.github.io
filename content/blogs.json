@@ -214,5 +214,15 @@
     "blogUrl": "uestc-food-guide.md",
     "category": "uestc",
     "readingMinutes": 1
+  },
+  {
+    "title": "成电资源指北：题目从哪来",
+    "description": "从教材课后题、飞书云文档到 Xovee 仓库、成惠和智博书店，聊聊电子科大的复习资料都藏在哪里，以及为什么原题总是搞不到。",
+    "tags": ["电子科大", "复习资料", "期末考试", "课程资源"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-15",
+    "blogUrl": "uestc-exam-resources.md",
+    "category": "uestc",
+    "readingMinutes": 2
   }
 ]
