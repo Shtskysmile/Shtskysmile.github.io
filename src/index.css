@@ -276,6 +276,33 @@ input[type="submit"],
   }
 }
 
+/* ── 深渊区域 ── */
+/* 分类页给面板套一层 .dark 强制走暗色（拓扑上必须是祖先：Tailwind 的 dark
+   变体编译成 `:is(.dark *)` 后代选择器，挂在面板自己身上不匹配）。下面再把
+   面板压得比站点普通暗色模式更沉：近乎全黑的底 + 冷色暗角 + 底部渐黑。
+
+   这段必须放在 @layer 之外。@layer components 会被提升到 utilities 之前，
+   而卡片自身的 `dark:bg-...` 与本段同为 0,2,0 特异性，同权重下靠后者胜出，
+   留在 layer 里就会被 utilities 盖掉。 */
+.abyss-panel {
+  @apply relative overflow-hidden;
+  background-image:
+    radial-gradient(120% 80% at 50% 0%, rgb(76 76 102 / 0.25), transparent 70%),
+    radial-gradient(100% 60% at 50% 110%, rgb(0 0 0 / 0.9), transparent 65%),
+    linear-gradient(180deg, #0b0b12 0%, #06060a 100%);
+  box-shadow: inset 0 0 120px rgb(0 0 0 / 0.8);
+}
+
+/* 卡片用纯黑，和站点普通暗色模式一致（那里卡片本就是 bg-surface-card-dark
+   = #000，衬在近黑面板上）。别为了显形而调亮卡片：底色一亮，卡片里的次要
+   文字（日期、作者）对比度就掉下来，比站点暗色模式更难读。描边压到
+   stone-800，比站点的 stone-700 更收敛，符合「沉在底下」。
+   带上前面的 .dark 是为了压过卡片自身的 `dark:bg-...`：两者同为 0,2,0
+   特异性时靠输出顺序定胜负，而这里的位置不保证在 utilities 之后。 */
+.dark .abyss-panel .article-card {
+  @apply border-stone-800 bg-black;
+}
+
 /* ── 正文里的公式 ── */
 /* KaTeX 默认字号是 1.21em，相对正文（16px）偏小，整体放大一档。
    选择器带上 .prose 是为了压过 KaTeX 自带样式——它的 CSS 随文章页的

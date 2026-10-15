@@ -76,6 +76,9 @@ export default function CategoryPage() {
   }
 
   const canonical = `${BASE_URL}/categories/${category.id}`;
+  // 深渊区域：给面板挂上 dark 作用域，整个内容区强制走暗色；abyss-panel
+  // 再把它压得比站点普通暗色模式更沉（见 index.css）
+  const isAbyss = category.id === HIDDEN_CATEGORY_ID;
 
   return (
     <>
@@ -97,96 +100,102 @@ export default function CategoryPage() {
         <meta name="twitter:image" content={`${BASE_URL}/images/covers/cover.jpg`} />
       </Helmet>
 
-      <div className="surface-panel mx-auto my-6 w-[calc(100%-2rem)] max-w-6xl p-5 sm:p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <button
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-          >
-            <ArrowLeft size={16} />
-            返回
-          </button>
-        </div>
-
-        {/* 分类头图：随机二次元图，取不到时退回内置 SVG */}
-        {heroArt === null ? (
-          // 图集还没决定好：先留白，别画一张再换掉
-          <div
-            className="mb-2 aspect-[3/1] w-full rounded-xl bg-stone-200/70 shadow-sm dark:bg-stone-700/40"
-            aria-hidden="true"
-          />
-        ) : heroCover.art ? (
-          <div className="relative mb-2 aspect-[3/1] w-full overflow-hidden rounded-xl shadow-sm">
-            <ImagePreview
-              src={heroCover.art.heroSrc}
-              downloadSrc={heroCover.art.originalSrc}
-              alt={`${category.name} 分类头图`}
-              filename={`${category.id}-cover`}
-              className="absolute inset-0 h-full w-full"
+      <div className={isAbyss ? "dark" : undefined}>
+        <div
+          className={`surface-panel mx-auto my-6 w-[calc(100%-2rem)] max-w-6xl p-5 sm:p-8 ${
+            isAbyss ? "abyss-panel" : ""
+          }`}
+        >
+          <div className="mb-6 flex items-center justify-between">
+            <button
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
             >
-              <AnimeCover
-                art={heroCover.art}
-                src={heroCover.art.heroSrc}
-                onError={heroCover.onError}
-              />
-            </ImagePreview>
-            <ArtCredit
-              art={heroCover.art}
-              variant="overlay"
-              className="absolute bottom-1.5 right-1.5"
-            />
+              <ArrowLeft size={16} />
+              返回
+            </button>
           </div>
-        ) : (
-          <CategoryCover
-            category={category.id}
-            seed={BLOG_CATEGORIES.findIndex((c) => c.id === category.id)}
-            className="mb-5 h-28 w-full rounded-xl shadow-sm"
-          />
-        )}
 
-        <div className="mb-6">
-          <h1 className="font-heading text-2xl text-stone-800 dark:text-stone-100">
-            {category.name}
-          </h1>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-            {category.description}
-            {posts.length > 0 && ` · 共 ${posts.length} 篇`}
-          </p>
-          {/* 只有靠秘籍进来的隐藏分类才显示这句 */}
-          {category.id === HIDDEN_CATEGORY_ID && (
-            <p className="mt-2 text-xs text-stone-400 dark:text-stone-500">
-              口令生效了。欢迎来到网站的最底层——这里暂时还什么都没埋。
-            </p>
-          )}
-        </div>
-
-        {posts.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-stone-200 px-4 py-10 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
-            我太懒了，还没写完
-          </p>
-        ) : (
-          <>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
-              {visible.map((post, i) => (
-                <BlogCard
-                  key={post.blogUrl}
-                  post={post}
-                  index={i}
-                  art={pickArt(animeArt, postIndex(post.blogUrl))}
+          {/* 分类头图：随机二次元图，取不到时退回内置 SVG */}
+          {heroArt === null ? (
+            // 图集还没决定好：先留白，别画一张再换掉
+            <div
+              className="mb-2 aspect-[3/1] w-full rounded-xl bg-stone-200/70 shadow-sm dark:bg-stone-700/40"
+              aria-hidden="true"
+            />
+          ) : heroCover.art ? (
+            <div className="relative mb-2 aspect-[3/1] w-full overflow-hidden rounded-xl shadow-sm">
+              <ImagePreview
+                src={heroCover.art.heroSrc}
+                downloadSrc={heroCover.art.originalSrc}
+                alt={`${category.name} 分类头图`}
+                filename={`${category.id}-cover`}
+                className="absolute inset-0 h-full w-full"
+              >
+                <AnimeCover
+                  art={heroCover.art}
+                  src={heroCover.art.heroSrc}
+                  onError={heroCover.onError}
                 />
-              ))}
+              </ImagePreview>
+              <ArtCredit
+                art={heroCover.art}
+                variant="overlay"
+                className="absolute bottom-1.5 right-1.5"
+              />
             </div>
-            <Pagination page={currentPage} totalPages={totalPages} hrefFor={hrefForPage} />
-          </>
-        )}
+          ) : (
+            <CategoryCover
+              category={category.id}
+              seed={BLOG_CATEGORIES.findIndex((c) => c.id === category.id)}
+              className="mb-5 h-28 w-full rounded-xl shadow-sm"
+            />
+          )}
 
-        <div className="mt-12 border-t border-stone-200 pt-6 text-center dark:border-stone-700">
-          <Link
-            to="/blogs"
-            className="text-sm text-accent underline-offset-4 transition-colors hover:underline"
-          >
-            查看全部文章
-          </Link>
+          <div className="mb-6">
+            <h1 className="font-heading text-2xl text-stone-800 dark:text-stone-100">
+              {category.name}
+            </h1>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+              {category.description}
+              {posts.length > 0 && ` · 共 ${posts.length} 篇`}
+            </p>
+            {/* 只有靠秘籍进来的隐藏分类才显示这句 */}
+            {category.id === HIDDEN_CATEGORY_ID && (
+              <p className="mt-2 text-xs text-stone-400 dark:text-stone-500">
+                口令生效了。欢迎来到网站的最底层——这里埋着些不方便放在上面讲的东西。
+              </p>
+            )}
+          </div>
+
+          {posts.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-stone-200 px-4 py-10 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
+              我太懒了，还没写完
+            </p>
+          ) : (
+            <>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
+                {visible.map((post, i) => (
+                  <BlogCard
+                    key={post.blogUrl}
+                    post={post}
+                    index={i}
+                    art={pickArt(animeArt, postIndex(post.blogUrl))}
+                  />
+                ))}
+              </div>
+              <Pagination page={currentPage} totalPages={totalPages} hrefFor={hrefForPage} />
+            </>
+          )}
+
+          <div className="mt-12 border-t border-stone-200 pt-6 text-center dark:border-stone-700">
+            <Link
+              to="/blogs"
+              className="text-sm text-accent underline-offset-4 transition-colors hover:underline"
+            >
+              查看全部文章
+            </Link>
+          </div>
         </div>
       </div>
     </>

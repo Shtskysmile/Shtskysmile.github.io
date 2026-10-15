@@ -255,7 +255,7 @@ export default function BlogArticlePage() {
                   <span className="flex items-center gap-1">
                     <Calendar size={12} />
                     {formatRelativeDate(post.publishDate)}
-                    <span className="text-stone-300 dark:text-stone-600">
+                    <span className="text-stone-500 dark:text-stone-400">
                       ({formatAbsoluteDate(post.publishDate)})
                     </span>
                   </span>
