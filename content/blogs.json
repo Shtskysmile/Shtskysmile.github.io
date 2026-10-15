@@ -247,12 +247,32 @@
   },
   {
     "title": "跨过长城，刺穿金盾",
-    "description": "一份不存在的国策树：从「邻人皆通」到「今日无事发生」，以及一路上所有可以叠加的选择。",
+    "description": "塞外纪事之一：塞内没有黄金，黄金在长城之外。一卷从塞里带出来的抄本，附笺注数条。",
     "tags": ["随笔", "深渊"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-15",
     "blogUrl": "beyond-the-wall.md",
     "category": "abyss",
     "readingMinutes": 2
+  },
+  {
+    "title": "引路人",
+    "description": "塞外纪事之二：出了塞，最先遇见的不是黄金，是人。他有通关文凭，来去自如——你得想办法拿到他。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-15",
+    "blogUrl": "the-guide.md",
+    "category": "abyss",
+    "readingMinutes": 3
+  },
+  {
+    "title": "行装",
+    "description": "塞外纪事之三：引路人认路，却不替你驮东西。出了塞，还缺三件必须带上的行装——地基、血脉、门。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-15",
+    "blogUrl": "provisions.md",
+    "category": "abyss",
+    "readingMinutes": 4
   }
 ]
