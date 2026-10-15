@@ -224,5 +224,15 @@
     "blogUrl": "uestc-exam-resources.md",
     "category": "uestc",
     "readingMinutes": 2
+  },
+  {
+    "title": "大一新生买什么电脑",
+    "description": "游戏本、轻薄本加台式机、只买轻薄本、二手 MacBook 加主机，四套组合各自适合谁、坑在哪里。",
+    "tags": ["电子科大", "笔记本", "新生", "选购"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-15",
+    "blogUrl": "freshman-laptop-guide.md",
+    "category": "uestc",
+    "readingMinutes": 3
   }
 ]
