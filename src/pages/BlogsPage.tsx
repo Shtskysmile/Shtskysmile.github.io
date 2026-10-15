@@ -7,10 +7,23 @@ import Pagination from "@/components/Pagination";
 import { pickArt } from "@/lib/anime";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { postIndex } from "@/lib/posts";
+import { HIDDEN_CATEGORY_ID, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 
+/**
+ * 全量文章，仅用于封面图集容量。
+ *
+ * useAnimeArt 的图集是全站记忆一次的，谁先挂载谁定容量；而封面按全局 postIndex
+ * （见 lib/posts）取图，下标最大到全量长度。所以这里必须用过滤前的数量，
+ * 否则列表页和其他页报的数对不上，图集会被截短、封面开始重样。
+ */
 const allPosts = blogsData as BlogPost[];
+
+/** 列表页展示用：隐藏分类（深渊区域）不进列表，它只该靠 Konami 秘籍进入。 */
+const visiblePosts = allPosts.filter(
+  (p) => (p.category ?? DEFAULT_BLOG_CATEGORY) !== HIDDEN_CATEGORY_ID,
+);
 
 /** 每页条数 */
 const PAGE_SIZE = 8;
@@ -34,7 +47,7 @@ export default function BlogsPage() {
     window.scrollTo({ top: 0 });
   }, [page]);
 
-  const sorted = [...allPosts].sort((a, b) => {
+  const sorted = [...visiblePosts].sort((a, b) => {
     const diff = new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
     return sortOrder === "desc" ? -diff : diff;
   });
@@ -97,7 +110,7 @@ export default function BlogsPage() {
             全部文章
           </h1>
           <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-            共 {allPosts.length} 篇文章
+            共 {visiblePosts.length} 篇文章
           </p>
         </div>
 

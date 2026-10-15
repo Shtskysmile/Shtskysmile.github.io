@@ -47,11 +47,14 @@ function esc(str) {
 }
 
 /**
- * Build a full HTML page by injecting SEO meta tags into the clean
- * index.html template. Replaces <title> and inserts all meta/link/script
- * tags right before </head>.
+ * 构建一个完整 HTML 页面：把 SEO meta 标签注入干净的 index.html 模板。
+ * 替换 <title>，并在 </head> 前插入所有 meta/link/script 标签。
+ *
+ * `noindex` 为真时注入 robots 指令，让爬虫既不收录也不跟随后续链接。
+ * 深渊区域（隐藏分类）用它把自己从搜索结果里摘出去——页面仍然公开可访问，
+ * 只是不再出现在索引里。
  */
-function buildPage({ title, description, url, image, type, extra }) {
+function buildPage({ title, description, url, image, type, extra, noindex = false }) {
   let html = indexHtml;
 
   // Replace <title>
@@ -61,6 +64,13 @@ function buildPage({ title, description, url, image, type, extra }) {
   const seoTags = [
     `<meta name="description" content="${esc(description)}" />`,
     `<link rel="canonical" href="${esc(url)}" />`,
+  ];
+
+  if (noindex) {
+    seoTags.push(`<meta name="robots" content="noindex, nofollow" />`);
+  }
+
+  seoTags.push(
     ``,
     `<!-- Open Graph -->`,
     `<meta property="og:type" content="${esc(type)}" />`,
@@ -78,7 +88,7 @@ function buildPage({ title, description, url, image, type, extra }) {
     `<meta name="twitter:title" content="${esc(title)}" />`,
     `<meta name="twitter:description" content="${esc(description)}" />`,
     `<meta name="twitter:image" content="${esc(image)}" />`,
-  ];
+  );
 
   // Add extra head tags (article:published_time, author, keywords, tags)
   if (extra?.headTags) {
@@ -189,6 +199,9 @@ const CATEGORIES = [
   { id: "uestc", name: "电子科大专区", description: "成电相关的记录与经验" },
 ];
 
+/** 与 src/lib/constants.ts 的 HIDDEN_CATEGORY_ID 保持一致。 */
+const HIDDEN_CATEGORY_ID = "abyss";
+
 for (const category of CATEGORIES) {
   const dir = resolve(DIST, "categories", category.id);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
@@ -199,6 +212,7 @@ for (const category of CATEGORIES) {
     url: `${BASE_URL}/categories/${category.id}`,
     image: COVER_IMAGE,
     type: "website",
+    noindex: category.id === HIDDEN_CATEGORY_ID,
   });
 
   writeFileSync(resolve(dir, "index.html"), html, "utf-8");
@@ -220,12 +234,15 @@ for (const post of posts) {
     .map((tag) => `<meta property="article:tag" content="${esc(tag)}" />`)
     .join("\n");
 
+  const isHidden = post.category === HIDDEN_CATEGORY_ID;
+
   const html = buildPage({
     title: `${post.title} | ${SITE_NAME}`,
     description: post.description,
     url: articleUrl,
     image: imageUrl,
     type: "article",
+    noindex: isHidden,
     extra: {
       headTags: [
         `<meta property="article:published_time" content="${esc(post.publishDate)}" />`,
@@ -281,6 +298,10 @@ for (const post of posts) {
 `;
 
   for (const category of CATEGORIES) {
+    // 隐藏分类不进 sitemap：它已经 noindex，提交上去只会让 Search Console
+    // 报「已提交但被 noindex 排除」。
+    if (category.id === HIDDEN_CATEGORY_ID) continue;
+
     sitemap += `  <url>
     <loc>${BASE_URL}/categories/${category.id}</loc>
     <lastmod>${today}</lastmod>
@@ -291,6 +312,8 @@ for (const post of posts) {
   }
 
   for (const post of posts) {
+    if (post.category === HIDDEN_CATEGORY_ID) continue;
+
     const slug = post.blogUrl.replace(/\.md$/, "");
     sitemap += `  <url>
     <loc>${BASE_URL}/blogs/${slug}</loc>
