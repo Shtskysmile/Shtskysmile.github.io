@@ -288,7 +288,7 @@
   },
   {
     "title": "塞外最大的图书馆",
-    "description": "塞外纪事之四：不设门房，也不查文凭。同一件事有几十种写法，最难的是分清哪一页昨夜才被人添上去。",
+    "description": "塞外纪事之四：塞外最大的图书馆，不设门房，也不查文凭。同一件事有几十种写法，最难的是分清哪一页昨夜才被人添上去。",
     "tags": ["随笔", "深渊"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-16",
@@ -317,7 +317,7 @@
     "readingMinutes": 4
   },
   {
-    "title": "不收门票的歌唱家",
+    "title": "分文不取的歌唱家",
     "description": "塞外纪事之七：没有人见过她的样子，她只在旷野各处唱歌。她不收钱，只收你一点耐性。",
     "tags": ["随笔", "深渊"],
     "author": "Shtskysmile",
@@ -335,5 +335,85 @@
     "blogUrl": "the-four-sisters.md",
     "category": "abyss",
     "readingMinutes": 5
+  },
+  {
+    "title": "广场上，百鸟只说半句话",
+    "description": "塞外纪事之九：X 的广场没有讲坛，只有短笺、串帖与井号旗；转抄能让一句话走远，也能把火星抬成烽火。",
+    "tags": ["随笔", "深渊", "X", "社交媒体"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "x-plaza.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "影壁长明",
+    "description": "塞外纪事之十：YouTube 是一座通宵不灭的影城，频道各有戏台，Shorts 与推荐流会把观众从一扇亮窗牵到下一扇。",
+    "tags": ["随笔", "深渊", "YouTube", "视频"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "youtube-theater.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "星河画廊的标签咒",
+    "description": "塞外纪事之十一：pixiv 的画廊以标签为路、以书签为藏；画师、同人、CP 与委托，在星河里各自寻人。",
+    "tags": ["随笔", "深渊", "pixiv", "插画"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "pixiv-star-gallery.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "双勾之间",
+    "description": "塞外纪事之十二：WhatsApp 是一座熟人密谈的驿站，双勾标记信件的行程，群组、社区、频道与限时状态各有门径。",
+    "tags": ["随笔", "深渊", "WhatsApp", "即时通讯"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "whatsapp-double-check.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "旧友村、墙与记忆集",
+    "description": "塞外纪事之十三：Facebook 像一座由时间线、好友与社团织成的旧村，墙上留着旧照，村口还有集市与约期。",
+    "tags": ["随笔", "深渊", "Facebook", "社交媒体"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "facebook-old-village.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "镜廊诸灯",
+    "description": "塞外纪事之十四：Instagram 的九格门面收纳精心摆放的生活，Stories 的灯亮一天便熄，Close Friends 留着一圈绿色内院。",
+    "tags": ["随笔", "深渊", "Instagram", "社交媒体"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "instagram-gallery-of-mirrors.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "无主火塘与分舵",
+    "description": "塞外纪事之十五：Reddit 没有总坛，只有无数 subreddit；投票汇成 Karma，Flair、版主与 AMA 构成各自的火塘规矩。",
+    "tags": ["随笔", "深渊", "Reddit", "社区"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "reddit-firepit.md",
+    "category": "abyss",
+    "readingMinutes": 4
+  },
+  {
+    "title": "千人同题，榜有两重",
+    "description": "塞外纪事之十六：Kaggle 让众人用同一份数据解题，Notebook、Fork、baseline 与 ensemble 都能逐分较量，最终却由暗榜揭晓名次。",
+    "tags": ["随笔", "深渊", "Kaggle", "机器学习"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "kaggle-dual-leaderboard.md",
+    "category": "abyss",
+    "readingMinutes": 4
   }
 ]
