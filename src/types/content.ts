@@ -40,6 +40,8 @@ export interface BlogPost {
   category: BlogCategoryId;
   /** 深渊区域内部的书架分类；不参与公开文章分类导航。 */
   shelf?: string;
+  /** 固定顺序书架中的篇序。 */
+  shelfOrder?: number;
   /**
    * 预计阅读时长（分钟）。派生数据，由 scripts/update-reading-times.mjs 写入。
    * 放在元数据里是为了让列表页不必为了显示时长去下载整篇正文。

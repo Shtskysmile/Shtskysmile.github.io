@@ -59,16 +59,20 @@ export default function CategoryPage() {
         : [],
     [category],
   );
+  const selectedShelf = shelves.find((shelf) => shelf.id === selectedShelfId);
   const posts = useMemo(() => {
     const selected = selectedShelfId
       ? categoryPosts.filter((post) => post.shelf === selectedShelfId)
       : categoryPosts;
+    if (selectedShelf?.sort === "fixed") {
+      return [...selected].sort((a, b) => (a.shelfOrder ?? 0) - (b.shelfOrder ?? 0));
+    }
     return [...selected].sort((a, b) =>
       sortMode === "alphabetical"
         ? titleCollator.compare(a.title, b.title)
         : new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
     );
-  }, [categoryPosts, selectedShelfId, sortMode]);
+  }, [categoryPosts, selectedShelf, selectedShelfId, sortMode]);
 
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -248,7 +252,7 @@ export default function CategoryPage() {
             </section>
           )}
 
-          {posts.length > 0 && (
+          {posts.length > 0 && selectedShelf?.sort !== "fixed" && (
             <div className="mb-4 flex justify-end">
               <button
                 type="button"

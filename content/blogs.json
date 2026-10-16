@@ -33,7 +33,8 @@
     "category": "study",
     "readingMinutes": 7,
     "highlight": true,
-    "shelf": "ai-tools"
+    "shelf": "ai-tools",
+    "shelfOrder": 1
   },
   {
     "title": "血肉苦弱，智械飞升（二）：用 Command-Code-GO 低价获取 deepseek-flash 额度",
@@ -45,7 +46,8 @@
     "category": "study",
     "readingMinutes": 7,
     "highlight": true,
-    "shelf": "ai-tools"
+    "shelf": "ai-tools",
+    "shelfOrder": 2
   },
   {
     "title": "血肉苦弱，智械飞升（三）：购买 GPT Plus 接入 Codex",
@@ -57,7 +59,8 @@
     "category": "study",
     "readingMinutes": 8,
     "highlight": true,
-    "shelf": "ai-tools"
+    "shelf": "ai-tools",
+    "shelfOrder": 3
   },
   {
     "title": "一起来玩 Minecraft",
@@ -290,7 +293,8 @@
     "blogUrl": "beyond-the-wall.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 2
+    "readingMinutes": 2,
+    "shelfOrder": 1
   },
   {
     "title": "引路人",
@@ -301,7 +305,8 @@
     "blogUrl": "the-guide.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 3
+    "readingMinutes": 3,
+    "shelfOrder": 2
   },
   {
     "title": "行装",
@@ -312,7 +317,8 @@
     "blogUrl": "provisions.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 3
   },
   {
     "title": "塞外最大的图书馆",
@@ -323,7 +329,8 @@
     "blogUrl": "the-great-library.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 3
+    "readingMinutes": 3,
+    "shelfOrder": 4
   },
   {
     "title": "特立格拉姆大集市",
@@ -334,7 +341,8 @@
     "blogUrl": "the-bazaar.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 3
+    "readingMinutes": 3,
+    "shelfOrder": 5
   },
   {
     "title": "吉特工会",
@@ -345,7 +353,8 @@
     "blogUrl": "git-guild.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 6
   },
   {
     "title": "分文不取的歌唱家",
@@ -356,7 +365,8 @@
     "blogUrl": "the-singer.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 3
+    "readingMinutes": 3,
+    "shelfOrder": 7
   },
   {
     "title": "博学健谈的四位姑娘",
@@ -367,7 +377,8 @@
     "blogUrl": "the-four-sisters.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 5
+    "readingMinutes": 5,
+    "shelfOrder": 8
   },
   {
     "title": "白鸟广场",
@@ -378,7 +389,8 @@
     "blogUrl": "white-bird-square.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 9
   },
   {
     "title": "塞外影戏院",
@@ -389,7 +401,8 @@
     "blogUrl": "ten-thousand-windows.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 10
   },
   {
     "title": "星河画廊的寻路咒",
@@ -400,7 +413,8 @@
     "blogUrl": "star-gallery.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 11
   },
   {
     "title": "双勾之间",
@@ -411,7 +425,8 @@
     "blogUrl": "sealed-letter.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 12
   },
   {
     "title": "旧友村、墙与记忆集",
@@ -422,7 +437,8 @@
     "blogUrl": "old-village-wall.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 13
   },
   {
     "title": "镜宫晚灯",
@@ -433,7 +449,8 @@
     "blogUrl": "mirror-palace.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 14
   },
   {
     "title": "无主火塘与分舵",
@@ -444,7 +461,8 @@
     "blogUrl": "ownerless-fire.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 15
   },
   {
     "title": "千人同题，榜有两重",
@@ -455,6 +473,7 @@
     "blogUrl": "two-lists.md",
     "category": "abyss",
     "shelf": "beyond-wall",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelfOrder": 16
   }
 ]
