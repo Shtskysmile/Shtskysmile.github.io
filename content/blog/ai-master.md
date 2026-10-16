@@ -3,7 +3,7 @@
 > [!NOTE] 这个系列
 > 「血肉苦弱，智械飞升」第一篇，讲怎么把 coding agent 跑起来：用 API 的方式配置，以 Claude Code + DeepSeek 为例。
 >
-> 第二篇换成 Command-Code-GO，重点讲网关只支持 OpenAI 协议时怎么靠 CC Switch 路由转换。用 Claude Pro / GPT Plus 官方订阅账号直接登录那部分，留到后面再写。
+> 第二篇换成 Command-Code-GO，重点讲网关只支持 OpenAI 协议时怎么靠 CC Switch 路由转换。第三篇介绍通过 ChatGPT Plus 订阅登录 Codex。
 
 ## 一、先弄明白三样东西
 
@@ -150,8 +150,6 @@ claude
 
 再说一次：这几个地址为个人在用，不构成推荐。第二节讲的稳定性、跑路、数据经手风险，在这里同样适用，建议小额试水。
 
-## 十一、用订阅账号登录
+## 十一、下一篇：用订阅账号登录
 
-这一篇讲的是"用 API 跑起来"。如果手上已经有 Claude Pro 或 ChatGPT Plus 订阅，则不需要 API，也不需要中转站——直接用订阅账号登录官方客户端即可，额度算在订阅里，不用另外按量计费。
-
-这部分还没写完。GPT Plus 目前已知的购买渠道是 <https://www.aivora.cn>，本人未在该处购买过，不做担保。走通之后再补上来。
+如果已有 ChatGPT Plus，可用 ChatGPT 账号登录 Codex，按订阅计划使用 Codex 额度。第三篇会介绍这条官方登录路径，以及购买渠道和账号安全方面的边界。

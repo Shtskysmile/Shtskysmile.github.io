@@ -44,6 +44,17 @@
     "highlight": true
   },
   {
+    "title": "血肉苦弱，智械飞升（三）：购买 GPT Plus 接入 Codex",
+    "description": "介绍使用 ChatGPT Plus 官方登录 Codex 的方式、订阅额度与限制，并说明第三方购号、账号封禁和凭据安全风险。",
+    "tags": ["ChatGPT Plus", "Codex", "账号安全", "教程"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-16",
+    "blogUrl": "chatgpt-plus-codex.md",
+    "category": "study",
+    "readingMinutes": 8,
+    "highlight": true
+  },
+  {
     "title": "一起来玩 Minecraft",
     "description": "Java 版服务器 nbb.rainplay.cn:15750，加上就能进，欢迎来一起玩。",
     "tags": ["Minecraft", "服务器", "游戏"],
