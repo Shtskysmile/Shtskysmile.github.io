@@ -6,5 +6,8 @@ trash/**/*
 *.tsbuildinfo
 prompt.txt
 __pycache__/**/*
+# local agent/editor configuration
+/AGENTS.md
+/.claude/
 # drafts: bodies now live in content/blog/; local backup only
 articles/
