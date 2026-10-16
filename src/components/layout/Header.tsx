@@ -41,7 +41,7 @@ function Logo() {
   );
 }
 
-export default function Header() {
+export default function Header({ onAbyssShortcut }: { onAbyssShortcut?: () => void }) {
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
@@ -212,7 +212,7 @@ export default function Header() {
           >
             <Dices size={18} />
           </NavLink>
-          <ThemeToggle />
+          <ThemeToggle onAbyssShortcut={onAbyssShortcut} />
           <button
             ref={menuButtonRef}
             type="button"
