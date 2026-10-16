@@ -24,7 +24,10 @@ const allPosts = blogsData as BlogPost[];
 const visiblePosts = allPosts.filter(
   (p) => (p.category ?? DEFAULT_BLOG_CATEGORY) !== HIDDEN_CATEGORY_ID,
 );
-const visibleCategories = BLOG_CATEGORIES.filter((category) => category.id !== HIDDEN_CATEGORY_ID);
+const titleCollator = new Intl.Collator("zh-CN", { sensitivity: "base", numeric: true });
+const visibleCategories = BLOG_CATEGORIES.filter(
+  (category) => category.id !== HIDDEN_CATEGORY_ID,
+).sort((a, b) => titleCollator.compare(a.name, b.name));
 
 /** 每页条数 */
 const PAGE_SIZE = 8;
@@ -35,7 +38,7 @@ function parsePage(value: string | null): number {
 }
 
 export default function BlogsPage() {
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [sortMode, setSortMode] = useState<"newest" | "oldest" | "alphabetical">("newest");
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
   const selectedCategoryId = searchParams.get("category");
@@ -52,8 +55,9 @@ export default function BlogsPage() {
   }, [page, selectedCategoryId]);
 
   const sorted = [...selectedPosts].sort((a, b) => {
+    if (sortMode === "alphabetical") return titleCollator.compare(a.title, b.title);
     const diff = new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
-    return sortOrder === "desc" ? -diff : diff;
+    return sortMode === "newest" ? -diff : diff;
   });
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
@@ -112,16 +116,20 @@ export default function BlogsPage() {
 
           <button
             onClick={() => {
-              setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"));
+              setSortMode((mode) =>
+                mode === "newest" ? "oldest" : mode === "oldest" ? "alphabetical" : "newest",
+              );
               const params = new URLSearchParams(searchParams);
               params.delete("page");
               setSearchParams(params, { replace: true });
             }}
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-            aria-label={`按日期${sortOrder === "desc" ? "升序" : "降序"}排序`}
+            aria-label={`切换排序方式，当前为${
+              sortMode === "newest" ? "最新优先" : sortMode === "oldest" ? "最早优先" : "首字母顺序"
+            }`}
           >
             <ArrowUpDown size={16} />
-            {sortOrder === "desc" ? "最新优先" : "最早优先"}
+            {sortMode === "newest" ? "最新优先" : sortMode === "oldest" ? "最早优先" : "首字母顺序"}
           </button>
         </div>
 
@@ -209,7 +217,7 @@ export default function BlogsPage() {
                     </span>
                     <span className="text-xs tabular-nums text-stone-400">{count}</span>
                   </span>
-                  <span className="mt-2 block line-clamp-1 text-xs text-stone-500 dark:text-stone-400">
+                  <span className="mt-2 line-clamp-1 block text-xs text-stone-500 dark:text-stone-400">
                     {category.description}
                   </span>
                 </button>

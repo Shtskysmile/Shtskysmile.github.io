@@ -8,7 +8,8 @@
     "blogUrl": "agent-projects-failure-analysis.md",
     "category": "study",
     "readingMinutes": 60,
-    "highlight": true
+    "highlight": true,
+    "shelf": "ai-agents"
   },
   {
     "title": "Agent实现笔记：从 HTTP 请求到 RAG 幻觉治理与评测",
@@ -19,7 +20,8 @@
     "blogUrl": "agent-implementation-notes.md",
     "category": "study",
     "readingMinutes": 20,
-    "highlight": true
+    "highlight": true,
+    "shelf": "ai-agents"
   },
   {
     "title": "血肉苦弱，智械飞升（一）：用中转站配置 Claude Code + DeepSeek",
@@ -30,7 +32,8 @@
     "blogUrl": "ai-master.md",
     "category": "study",
     "readingMinutes": 7,
-    "highlight": true
+    "highlight": true,
+    "shelf": "ai-tools"
   },
   {
     "title": "血肉苦弱，智械飞升（二）：用 Command-Code-GO 低价获取 deepseek-flash 额度",
@@ -41,7 +44,8 @@
     "blogUrl": "command-code-go.md",
     "category": "study",
     "readingMinutes": 7,
-    "highlight": true
+    "highlight": true,
+    "shelf": "ai-tools"
   },
   {
     "title": "血肉苦弱，智械飞升（三）：购买 GPT Plus 接入 Codex",
@@ -52,7 +56,8 @@
     "blogUrl": "chatgpt-plus-codex.md",
     "category": "study",
     "readingMinutes": 8,
-    "highlight": true
+    "highlight": true,
+    "shelf": "ai-tools"
   },
   {
     "title": "一起来玩 Minecraft",
@@ -63,7 +68,8 @@
     "blogUrl": "minecraft-server.md",
     "category": "games",
     "readingMinutes": 1,
-    "highlight": true
+    "highlight": true,
+    "shelf": "pc-games"
   },
   {
     "title": "哪個姩笩嫃哋過厾孒",
@@ -74,7 +80,8 @@
     "blogUrl": "childhood-gaming-nostalgia.md",
     "category": "life",
     "readingMinutes": 1,
-    "highlight": true
+    "highlight": true,
+    "shelf": "memories"
   },
   {
     "title": "～哦耶耶！",
@@ -84,7 +91,8 @@
     "publishDate": "2026-10-07",
     "blogUrl": "oh-yeye.md",
     "category": "life",
-    "readingMinutes": 1
+    "readingMinutes": 1,
+    "shelf": "memories"
   },
   {
     "title": "大语言模型面试复习资料",
@@ -94,7 +102,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "llm-interview-review.md",
     "category": "study",
-    "readingMinutes": 108
+    "readingMinutes": 108,
+    "shelf": "interview"
   },
   {
     "title": "数据结构与算法面试复习资料",
@@ -104,7 +113,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "data-structures-algorithms-interview-review.md",
     "category": "study",
-    "readingMinutes": 8
+    "readingMinutes": 8,
+    "shelf": "interview"
   },
   {
     "title": "操作系统面试复习资料",
@@ -114,7 +124,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "operating-systems-interview-review.md",
     "category": "study",
-    "readingMinutes": 7
+    "readingMinutes": 7,
+    "shelf": "interview"
   },
   {
     "title": "计算机网络面试复习资料",
@@ -124,7 +135,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "computer-networks-interview-review.md",
     "category": "study",
-    "readingMinutes": 6
+    "readingMinutes": 6,
+    "shelf": "interview"
   },
   {
     "title": "计算机组成原理面试复习资料",
@@ -134,7 +146,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "computer-organization-interview-review.md",
     "category": "study",
-    "readingMinutes": 6
+    "readingMinutes": 6,
+    "shelf": "interview"
   },
   {
     "title": "数据库与 SQL 面试复习资料",
@@ -144,7 +157,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "database-sql-interview-review.md",
     "category": "study",
-    "readingMinutes": 8
+    "readingMinutes": 8,
+    "shelf": "interview"
   },
   {
     "title": "软件工程面试复习资料",
@@ -154,7 +168,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "software-engineering-interview-review.md",
     "category": "study",
-    "readingMinutes": 5
+    "readingMinutes": 5,
+    "shelf": "interview"
   },
   {
     "title": "机器学习面试复习资料",
@@ -164,7 +179,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "machine-learning-interview-review.md",
     "category": "study",
-    "readingMinutes": 6
+    "readingMinutes": 6,
+    "shelf": "interview"
   },
   {
     "title": "深度学习面试复习资料",
@@ -174,7 +190,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "deep-learning-interview-review.md",
     "category": "study",
-    "readingMinutes": 6
+    "readingMinutes": 6,
+    "shelf": "interview"
   },
   {
     "title": "自然语言处理面试复习资料",
@@ -184,7 +201,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "nlp-interview-review.md",
     "category": "study",
-    "readingMinutes": 5
+    "readingMinutes": 5,
+    "shelf": "interview"
   },
   {
     "title": "概率论与数理统计面试复习资料",
@@ -194,7 +212,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "probability-statistics-interview-review.md",
     "category": "study",
-    "readingMinutes": 5
+    "readingMinutes": 5,
+    "shelf": "interview"
   },
   {
     "title": "线性代数面试复习资料",
@@ -204,7 +223,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "linear-algebra-interview-review.md",
     "category": "study",
-    "readingMinutes": 4
+    "readingMinutes": 4,
+    "shelf": "interview"
   },
   {
     "title": "强化学习面试复习资料（面向大模型对齐与智能体）",
@@ -214,7 +234,8 @@
     "publishDate": "2026-10-02",
     "blogUrl": "reinforcement-learning-interview-review.md",
     "category": "study",
-    "readingMinutes": 27
+    "readingMinutes": 27,
+    "shelf": "interview"
   },
   {
     "title": "电子科大觅食记：清水河校区周边十一家",
@@ -224,7 +245,8 @@
     "publishDate": "2026-10-04",
     "blogUrl": "uestc-food-guide.md",
     "category": "uestc",
-    "readingMinutes": 1
+    "readingMinutes": 1,
+    "shelf": "campus-life"
   },
   {
     "title": "成电资源指北：题目从哪来",
@@ -234,7 +256,8 @@
     "publishDate": "2026-10-15",
     "blogUrl": "uestc-exam-resources.md",
     "category": "uestc",
-    "readingMinutes": 2
+    "readingMinutes": 2,
+    "shelf": "course-resources"
   },
   {
     "title": "大一新生买什么电脑",
@@ -244,7 +267,8 @@
     "publishDate": "2026-10-15",
     "blogUrl": "freshman-laptop-guide.md",
     "category": "uestc",
-    "readingMinutes": 3
+    "readingMinutes": 3,
+    "shelf": "campus-life"
   },
   {
     "title": "新电脑玩什么：十个值得入坑的 Steam 端游",
@@ -254,7 +278,8 @@
     "publishDate": "2026-10-15",
     "blogUrl": "pc-game-picks.md",
     "category": "games",
-    "readingMinutes": 2
+    "readingMinutes": 2,
+    "shelf": "pc-games"
   },
   {
     "title": "跨过长城，刺穿金盾",

@@ -1,4 +1,5 @@
 // Social links, GitHub config, and shared constants
+import type { BlogCategoryId } from "@/types/content";
 
 export const GITHUB_USERNAME = "Shtskysmile";
 export const GITHUB_AVATAR_URL = `https://avatars.githubusercontent.com/${GITHUB_USERNAME}`;
@@ -77,3 +78,60 @@ export const DEFAULT_BLOG_CATEGORY = "study";
  * 所以分类本身仍保留在 BLOG_CATEGORIES 里。
  */
 export const HIDDEN_CATEGORY_ID = "abyss";
+
+/** 分类内部的小书架。深渊书架仍只在隐藏分类页内展示。 */
+export const BLOG_SHELVES: Record<
+  BlogCategoryId,
+  { id: string; name: string; description: string }[]
+> = {
+  study: [
+    {
+      id: "interview",
+      name: "面试复习",
+      description: "计算机基础、算法与人工智能方向的复习资料",
+    },
+    {
+      id: "ai-agents",
+      name: "AI 与智能体",
+      description: "大模型应用、智能体开发与工程实践",
+    },
+    {
+      id: "ai-tools",
+      name: "工具与配置",
+      description: "AI 编程工具、模型服务与账号配置指南",
+    },
+  ],
+  life: [
+    {
+      id: "memories",
+      name: "随笔与回忆",
+      description: "生活片段、日常记录与童年回忆",
+    },
+  ],
+  games: [
+    {
+      id: "pc-games",
+      name: "游戏与联机",
+      description: "PC 游戏、联机体验与服务器记录",
+    },
+  ],
+  abyss: [
+    {
+      id: "beyond-wall",
+      name: "长城之外",
+      description: "循着荒原上的古老传闻，走入关隘之外的秘境",
+    },
+  ],
+  uestc: [
+    {
+      id: "campus-life",
+      name: "校园生活",
+      description: "校园周边生活与新生选购指南",
+    },
+    {
+      id: "course-resources",
+      name: "课程资源",
+      description: "课程复习资料与学习资源指引",
+    },
+  ],
+};

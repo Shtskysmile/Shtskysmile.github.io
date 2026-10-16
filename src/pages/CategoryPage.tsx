@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, FolderOpen } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, FolderOpen } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import BlogCard from "@/components/BlogCard";
 import CategoryCover from "@/components/CategoryCover";
@@ -12,7 +12,12 @@ import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { useCoverArt } from "@/hooks/useCoverArt";
 import { postIndex } from "@/lib/posts";
 import Pagination from "@/components/Pagination";
-import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY, HIDDEN_CATEGORY_ID } from "@/lib/constants";
+import {
+  BLOG_CATEGORIES,
+  BLOG_SHELVES,
+  DEFAULT_BLOG_CATEGORY,
+  HIDDEN_CATEGORY_ID,
+} from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 
@@ -22,6 +27,7 @@ const BASE_URL = "https://shtskysmile.github.io";
 
 /** 每页条数 */
 const PAGE_SIZE = 8;
+const titleCollator = new Intl.Collator("zh-CN", { sensitivity: "base", numeric: true });
 
 function parsePage(value: string | null): number {
   const n = Number(value);
@@ -32,6 +38,7 @@ export default function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const category = BLOG_CATEGORIES.find((c) => c.id === categoryId);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [sortMode, setSortMode] = useState<"alphabetical" | "newest">("alphabetical");
   const page = parsePage(searchParams.get("page"));
   const selectedShelfId = searchParams.get("shelf");
   const animeArt = useAnimeArt(allPosts.length + 2);
@@ -43,23 +50,25 @@ export default function CategoryPage() {
       category ? allPosts.filter((p) => (p.category ?? DEFAULT_BLOG_CATEGORY) === category.id) : [],
     [category],
   );
-  const shelves =
-    category?.id === HIDDEN_CATEGORY_ID
-      ? [
-          {
-            id: "beyond-wall",
-            name: "长城之外",
-            description: "循着荒原上的古老传闻，走入关隘之外的秘境",
-          },
-        ]
-      : [];
-  const posts = useMemo(
+  const shelves = useMemo(
     () =>
-      selectedShelfId
-        ? categoryPosts.filter((post) => post.shelf === selectedShelfId)
-        : categoryPosts,
-    [categoryPosts, selectedShelfId],
+      category
+        ? [...(BLOG_SHELVES[category.id] ?? [])].sort((a, b) =>
+            titleCollator.compare(a.name, b.name),
+          )
+        : [],
+    [category],
   );
+  const posts = useMemo(() => {
+    const selected = selectedShelfId
+      ? categoryPosts.filter((post) => post.shelf === selectedShelfId)
+      : categoryPosts;
+    return [...selected].sort((a, b) =>
+      sortMode === "alphabetical"
+        ? titleCollator.compare(a.title, b.title)
+        : new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
+    );
+  }, [categoryPosts, selectedShelfId, sortMode]);
 
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -70,7 +79,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-  }, [categoryId, page]);
+  }, [categoryId, page, selectedShelfId]);
 
   // 顶栏的分类链接是裸链接，切换分类时 page 自然被清掉
   const hrefForPage = (p: number) => {
@@ -229,7 +238,7 @@ export default function CategoryPage() {
                         </span>
                         <span className="text-xs tabular-nums text-stone-400">{count}</span>
                       </span>
-                      <span className="mt-2 block line-clamp-1 text-xs text-stone-500 dark:text-stone-400">
+                      <span className="mt-2 line-clamp-1 block text-xs text-stone-500 dark:text-stone-400">
                         {shelf.description}
                       </span>
                     </button>
@@ -237,6 +246,22 @@ export default function CategoryPage() {
                 })}
               </div>
             </section>
+          )}
+
+          {posts.length > 0 && (
+            <div className="mb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() =>
+                  setSortMode((mode) => (mode === "alphabetical" ? "newest" : "alphabetical"))
+                }
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+                aria-label={`切换排序方式，当前为${sortMode === "alphabetical" ? "首字母顺序" : "最新优先"}`}
+              >
+                <ArrowUpDown size={16} />
+                {sortMode === "alphabetical" ? "首字母顺序" : "最新优先"}
+              </button>
+            </div>
           )}
 
           {posts.length === 0 ? (
