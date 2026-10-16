@@ -4,13 +4,12 @@ import { Dices, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { SCHOOL_EMBLEMS, BLOG_CATEGORIES, HIDDEN_CATEGORY_ID } from "@/lib/constants";
+import { SCHOOL_EMBLEMS, BLOG_CATEGORIES } from "@/lib/constants";
 
 /** Minimum downward scroll (px) before hiding. Upward scroll shows immediately. */
 const HIDE_DELTA = 10;
 
-/** 隐藏分类（深渊区域）不进导航，靠 Konami 秘籍进入 */
-const NAV_CATEGORIES = BLOG_CATEGORIES.filter((category) => category.id !== HIDDEN_CATEGORY_ID);
+const NAV_CATEGORIES = BLOG_CATEGORIES;
 
 const MOBILE_MENU_ID = "mobile-category-menu";
 
@@ -41,7 +40,7 @@ function Logo() {
   );
 }
 
-export default function Header({ onAbyssShortcut }: { onAbyssShortcut?: () => void }) {
+export default function Header() {
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
@@ -212,7 +211,7 @@ export default function Header({ onAbyssShortcut }: { onAbyssShortcut?: () => vo
           >
             <Dices size={18} />
           </NavLink>
-          <ThemeToggle onAbyssShortcut={onAbyssShortcut} />
+          <ThemeToggle />
           <button
             ref={menuButtonRef}
             type="button"
