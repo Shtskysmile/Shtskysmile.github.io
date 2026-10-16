@@ -12,7 +12,7 @@ import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { useCoverArt } from "@/hooks/useCoverArt";
 import { postIndex } from "@/lib/posts";
 import Pagination from "@/components/Pagination";
-import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
+import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY, HIDDEN_CATEGORY_ID } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 
@@ -76,8 +76,9 @@ export default function CategoryPage() {
   }
 
   const canonical = `${BASE_URL}/categories/${category.id}`;
-  // 「长城之外」保留深色面板，营造秘境氛围（见 index.css）。
-  const isFrontier = category.id === "abyss";
+  // 深渊区域：给面板挂上 dark 作用域，整个内容区强制走暗色；abyss-panel
+  // 再把它压得比站点普通暗色模式更沉（见 index.css）
+  const isAbyss = category.id === HIDDEN_CATEGORY_ID;
 
   return (
     <>
@@ -99,10 +100,10 @@ export default function CategoryPage() {
         <meta name="twitter:image" content={`${BASE_URL}/images/covers/cover.jpg`} />
       </Helmet>
 
-      <div className={isFrontier ? "dark" : undefined}>
+      <div className={isAbyss ? "dark" : undefined}>
         <div
           className={`surface-panel mx-auto my-6 w-[calc(100%-2rem)] max-w-6xl p-5 sm:p-8 ${
-            isFrontier ? "abyss-panel" : ""
+            isAbyss ? "abyss-panel" : ""
           }`}
         >
           <div className="mb-6 flex items-center justify-between">
@@ -159,6 +160,12 @@ export default function CategoryPage() {
               {category.description}
               {posts.length > 0 && ` · 共 ${posts.length} 篇`}
             </p>
+            {/* 只有靠秘籍进来的隐藏分类才显示这句 */}
+            {category.id === HIDDEN_CATEGORY_ID && (
+              <p className="mt-2 text-xs text-stone-400 dark:text-stone-500">
+                口令生效了。欢迎来到网站的最底层——这里埋着些不方便放在上面讲的东西。
+              </p>
+            )}
           </div>
 
           {posts.length === 0 ? (

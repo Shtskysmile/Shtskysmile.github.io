@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { ThemeContext } from "@/context/ThemeContext";
 import { useTheme } from "@/hooks/useTheme";
+import { useKonami } from "@/hooks/useKonami";
 import Header from "@/components/layout/Header";
 import NotFoundPage from "@/pages/NotFoundPage";
 import PageBoundary from "@/components/PageBoundary";
@@ -27,12 +28,16 @@ function PageFallback() {
 
 export default function App() {
   const themeState = useTheme();
+  const navigate = useNavigate();
   const location = useLocation();
+
+  // 深渊区域不在导航里：桌面用 Konami 秘籍，手机连点主题切换七次。
+  useKonami(() => navigate("/categories/abyss"));
 
   return (
     <ThemeContext.Provider value={themeState}>
       <div className="flex min-h-screen flex-col">
-        <Header />
+        <Header onAbyssShortcut={() => navigate("/categories/abyss")} />
         <main className="flex-1">
           {/* key 跟随路由：某个页面 chunk 加载失败后，切到别的路由能自动恢复，
               不必强制刷新（刷新只是兜底手段之一） */}

@@ -7,7 +7,7 @@ import Pagination from "@/components/Pagination";
 import { pickArt } from "@/lib/anime";
 import { useAnimeArt } from "@/hooks/useAnimeArt";
 import { postIndex } from "@/lib/posts";
-import { BLOG_CATEGORIES, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
+import { BLOG_CATEGORIES, HIDDEN_CATEGORY_ID, DEFAULT_BLOG_CATEGORY } from "@/lib/constants";
 import type { BlogPost } from "@/types/content";
 import blogsData from "@content/blogs.json";
 
@@ -20,8 +20,11 @@ import blogsData from "@content/blogs.json";
  */
 const allPosts = blogsData as BlogPost[];
 
-const visiblePosts = allPosts;
-const visibleCategories = BLOG_CATEGORIES;
+/** 列表页展示用：隐藏分类（深渊区域）不进列表，它只该靠 Konami 秘籍进入。 */
+const visiblePosts = allPosts.filter(
+  (p) => (p.category ?? DEFAULT_BLOG_CATEGORY) !== HIDDEN_CATEGORY_ID,
+);
+const visibleCategories = BLOG_CATEGORIES.filter((category) => category.id !== HIDDEN_CATEGORY_ID);
 
 /** 每页条数 */
 const PAGE_SIZE = 8;
@@ -243,6 +246,10 @@ export default function BlogsPage() {
           >
             返回主页
           </Link>
+          {/* 深渊区域的线索：它不在导航里，只能靠 Konami 秘籍进 */}
+          <p className="mt-3 text-xs text-stone-300 dark:text-stone-600">
+            据说，把方向键按对顺序、再补上两个字母，能打开压在最底下的东西。
+          </p>
         </div>
       </div>
     </>
