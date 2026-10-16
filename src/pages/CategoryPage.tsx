@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FolderOpen } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import BlogCard from "@/components/BlogCard";
 import CategoryCover from "@/components/CategoryCover";
@@ -31,16 +31,34 @@ function parsePage(value: string | null): number {
 export default function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const category = BLOG_CATEGORIES.find((c) => c.id === categoryId);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
+  const selectedShelfId = searchParams.get("shelf");
   const animeArt = useAnimeArt(allPosts.length + 2);
 
   // category 取自常量数组，同一个 id 每次渲染都是同一个引用，
   // 所以 posts 的引用是稳定的
-  const posts = useMemo(
+  const categoryPosts = useMemo(
     () =>
       category ? allPosts.filter((p) => (p.category ?? DEFAULT_BLOG_CATEGORY) === category.id) : [],
     [category],
+  );
+  const shelves =
+    category?.id === HIDDEN_CATEGORY_ID
+      ? [
+          {
+            id: "beyond-wall",
+            name: "长城之外",
+            description: "循着荒原上的古老传闻，走入关隘之外的秘境",
+          },
+        ]
+      : [];
+  const posts = useMemo(
+    () =>
+      selectedShelfId
+        ? categoryPosts.filter((post) => post.shelf === selectedShelfId)
+        : categoryPosts,
+    [categoryPosts, selectedShelfId],
   );
 
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
@@ -55,8 +73,13 @@ export default function CategoryPage() {
   }, [categoryId, page]);
 
   // 顶栏的分类链接是裸链接，切换分类时 page 自然被清掉
-  const hrefForPage = (p: number) =>
-    p === 1 ? `/categories/${categoryId}` : `/categories/${categoryId}?page=${p}`;
+  const hrefForPage = (p: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("page");
+    if (p > 1) params.set("page", String(p));
+    const query = params.toString();
+    return query ? `/categories/${categoryId}?${query}` : `/categories/${categoryId}`;
+  };
 
   if (!category) {
     return (
@@ -167,6 +190,54 @@ export default function CategoryPage() {
               </p>
             )}
           </div>
+
+          {shelves.length > 0 && (
+            <section className="mb-8" aria-labelledby="abyss-shelves-heading">
+              <h2
+                id="abyss-shelves-heading"
+                className="mb-3 flex items-center gap-2 font-heading text-lg text-stone-800 dark:text-stone-100"
+              >
+                <FolderOpen size={19} className="text-accent" />
+                深渊书架
+              </h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {shelves.map((shelf) => {
+                  const count = categoryPosts.filter((post) => post.shelf === shelf.id).length;
+                  const isSelected = selectedShelfId === shelf.id;
+                  return (
+                    <button
+                      key={shelf.id}
+                      type="button"
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams);
+                        params.delete("page");
+                        if (isSelected) params.delete("shelf");
+                        else params.set("shelf", shelf.id);
+                        setSearchParams(params);
+                      }}
+                      aria-pressed={isSelected}
+                      className={`group rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                        isSelected
+                          ? "border-accent/50 bg-accent/10 shadow-sm"
+                          : "border-stone-200 bg-white/60 hover:border-accent/30 hover:bg-white dark:border-stone-700 dark:bg-stone-900/30 dark:hover:bg-stone-800/70"
+                      }`}
+                    >
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-stone-800 dark:text-stone-100">
+                          <FolderOpen size={16} className="shrink-0 text-accent" />
+                          <span className="truncate">{shelf.name}</span>
+                        </span>
+                        <span className="text-xs tabular-nums text-stone-400">{count}</span>
+                      </span>
+                      <span className="mt-2 block line-clamp-1 text-xs text-stone-500 dark:text-stone-400">
+                        {shelf.description}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {posts.length === 0 ? (
             <p className="rounded-xl border border-dashed border-stone-200 px-4 py-10 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
