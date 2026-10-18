@@ -38,7 +38,7 @@ export default function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const category = BLOG_CATEGORIES.find((c) => c.id === categoryId);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [sortMode, setSortMode] = useState<"alphabetical" | "newest">("alphabetical");
+  const [sortMode, setSortMode] = useState<"newest" | "oldest">("newest");
   const page = parsePage(searchParams.get("page"));
   const selectedShelfId = searchParams.get("shelf");
   const animeArt = useAnimeArt(allPosts.length + 2);
@@ -67,11 +67,10 @@ export default function CategoryPage() {
     if (selectedShelf?.sort === "fixed") {
       return [...selected].sort((a, b) => (a.shelfOrder ?? 0) - (b.shelfOrder ?? 0));
     }
-    return [...selected].sort((a, b) =>
-      sortMode === "alphabetical"
-        ? titleCollator.compare(a.title, b.title)
-        : new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime(),
-    );
+    return [...selected].sort((a, b) => {
+      const diff = new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
+      return sortMode === "newest" ? -diff : diff;
+    });
   }, [categoryPosts, selectedShelf, selectedShelfId, sortMode]);
 
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
@@ -211,7 +210,7 @@ export default function CategoryPage() {
                 className="mb-3 flex items-center gap-2 font-heading text-lg text-stone-800 dark:text-stone-100"
               >
                 <FolderOpen size={19} className="text-accent" />
-                深渊书架
+                分类目录
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {shelves.map((shelf) => {
@@ -257,13 +256,13 @@ export default function CategoryPage() {
               <button
                 type="button"
                 onClick={() =>
-                  setSortMode((mode) => (mode === "alphabetical" ? "newest" : "alphabetical"))
+                  setSortMode((mode) => (mode === "newest" ? "oldest" : "newest"))
                 }
                 className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-                aria-label={`切换排序方式，当前为${sortMode === "alphabetical" ? "首字母顺序" : "最新优先"}`}
+                aria-label={`切换排序方式，当前为${sortMode === "newest" ? "最新优先" : "最早优先"}`}
               >
                 <ArrowUpDown size={16} />
-                {sortMode === "alphabetical" ? "首字母顺序" : "最新优先"}
+                {sortMode === "newest" ? "最新优先" : "最早优先"}
               </button>
             </div>
           )}

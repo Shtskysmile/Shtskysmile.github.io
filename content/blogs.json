@@ -475,5 +475,65 @@
     "shelf": "beyond-wall",
     "readingMinutes": 4,
     "shelfOrder": 16
+  },
+  {
+    "title": "王城诸司",
+    "description": "塞外纪事之十七：藏书阁、云上藏卷阁、邮驿、测绘院与双子公主，各自显出王城的一种本领。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-18",
+    "blogUrl": "the-royal-surveyors.md",
+    "category": "abyss",
+    "shelf": "beyond-wall",
+    "readingMinutes": 4,
+    "shelfOrder": 17
+  },
+  {
+    "title": "双生之邦",
+    "description": "塞外纪事之十八：塞内人从蓝窗认识微软，出了塞又在云城、文书行会与 Xbox 绿野遇见它。",
+    "tags": ["随笔", "深渊"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-18",
+    "blogUrl": "twin-kingdom.md",
+    "category": "abyss",
+    "shelf": "beyond-wall",
+    "readingMinutes": 5,
+    "shelfOrder": 18
+  },
+  {
+    "title": "户籍司夜巡",
+    "description": "塞外纪事外传之一：王城户籍司替遗失印信的旅人核验身份、补办钥匙，也提醒他们别把所有门锁在同一处。",
+    "tags": ["随笔", "深渊", "外传"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-18",
+    "blogUrl": "royal-registry.md",
+    "category": "abyss",
+    "shelf": "beyond-wall-extras",
+    "readingMinutes": 3,
+    "shelfOrder": 1
+  },
+  {
+    "title": "蓝窗更衣夜",
+    "description": "塞外纪事外传之二：蓝窗工坊在深夜修补系统、照料旧器物，还要设法让新衣不惊扰屋里的人。",
+    "tags": ["随笔", "深渊", "外传"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-18",
+    "blogUrl": "blue-window-watch.md",
+    "category": "abyss",
+    "shelf": "beyond-wall-extras",
+    "readingMinutes": 3,
+    "shelfOrder": 2
+  },
+  {
+    "title": "守夜人值更簿",
+    "description": "塞外纪事外传之三：从守夜人的簿册、闸口与铜锣，窥见长城如何辨认并拦截往来信号。",
+    "tags": ["随笔", "深渊", "外传"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-18",
+    "blogUrl": "watchmen-ledger.md",
+    "category": "abyss",
+    "shelf": "beyond-wall-extras",
+    "readingMinutes": 4,
+    "shelfOrder": 3
   }
 ]

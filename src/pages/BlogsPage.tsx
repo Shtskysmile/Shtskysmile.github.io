@@ -38,7 +38,7 @@ function parsePage(value: string | null): number {
 }
 
 export default function BlogsPage() {
-  const [sortMode, setSortMode] = useState<"newest" | "oldest" | "alphabetical">("newest");
+  const [sortMode, setSortMode] = useState<"newest" | "oldest">("newest");
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parsePage(searchParams.get("page"));
   const selectedCategoryId = searchParams.get("category");
@@ -55,7 +55,6 @@ export default function BlogsPage() {
   }, [page, selectedCategoryId]);
 
   const sorted = [...selectedPosts].sort((a, b) => {
-    if (sortMode === "alphabetical") return titleCollator.compare(a.title, b.title);
     const diff = new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
     return sortMode === "newest" ? -diff : diff;
   });
@@ -117,19 +116,17 @@ export default function BlogsPage() {
           <button
             onClick={() => {
               setSortMode((mode) =>
-                mode === "newest" ? "oldest" : mode === "oldest" ? "alphabetical" : "newest",
+                mode === "newest" ? "oldest" : "newest",
               );
               const params = new URLSearchParams(searchParams);
               params.delete("page");
               setSearchParams(params, { replace: true });
             }}
             className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
-            aria-label={`切换排序方式，当前为${
-              sortMode === "newest" ? "最新优先" : sortMode === "oldest" ? "最早优先" : "首字母顺序"
-            }`}
+            aria-label={`切换排序方式，当前为${sortMode === "newest" ? "最新优先" : "最早优先"}`}
           >
             <ArrowUpDown size={16} />
-            {sortMode === "newest" ? "最新优先" : sortMode === "oldest" ? "最早优先" : "首字母顺序"}
+            {sortMode === "newest" ? "最新优先" : "最早优先"}
           </button>
         </div>
 

@@ -127,6 +127,12 @@ export const BLOG_SHELVES: Record<
       description: "循着荒原上的古老传闻，走入关隘之外的秘境",
       sort: "fixed",
     },
+    {
+      id: "beyond-wall-extras",
+      name: "外传",
+      description: "从王城、蓝窗与守夜人的另一面，听几段不入正卷的故事",
+      sort: "fixed",
+    },
   ],
   uestc: [
     {
