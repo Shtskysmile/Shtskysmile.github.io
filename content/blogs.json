@@ -1,5 +1,16 @@
 [
   {
+    "title": "合并两个有序表：从 O(m·n) 到 O(N) 的原地算法",
+    "description": "从逐元素插入、旋转分治到内部缓冲区归并，逐层分析两个有序表原地合并的时间与空间代价，并说明 Gap 归并为何是反例。",
+    "tags": ["数据结构", "算法", "归并", "原地算法", "复杂度分析"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-20",
+    "blogUrl": "merge-two-sorted-lists-inplace.md",
+    "category": "study",
+    "readingMinutes": 16,
+    "shelf": "interview"
+  },
+  {
     "title": "从「能跑」到「可靠」：八个项目的问题定位与改进",
     "description": "八个 Agent 项目的阶段性实践与问题复盘：涵盖工具调用、RAG、记忆、多轮检索、工具安全、问答质量与对抗性评测，归纳五类失效模式和五层防线。",
     "tags": ["Agentic AI", "RAG", "ReAct", "Function Calling", "提示注入", "幻觉治理", "对抗性评测", "LLM 评测", "LLM"],
