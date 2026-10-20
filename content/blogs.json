@@ -1,13 +1,13 @@
 [
   {
     "title": "合并两个有序表：从 O(m·n) 到 O(N) 的原地算法",
-    "description": "从逐元素插入、旋转分治到内部缓冲区归并，逐层分析两个有序表原地合并的时间与空间代价，并说明 Gap 归并为何是反例。",
+    "description": "从逐元素插入到旋转分治，再到内部缓冲区归并，逐层分析两个有序表原地合并的时间与空间代价与各自的适用边界。",
     "tags": ["数据结构", "算法", "归并", "原地算法", "复杂度分析"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-20",
     "blogUrl": "merge-two-sorted-lists-inplace.md",
     "category": "study",
-    "readingMinutes": 16,
+    "readingMinutes": 14,
     "shelf": "interview"
   },
   {
