@@ -4,7 +4,7 @@ LLM post-training（后训练）岗位的目标，是把预训练模型调整为
 
 本文面向大模型后训练算法、研究工程和训练工程岗位，整理核心知识，并对照截至 2026 年 10 月可查到的 OpenAI、Anthropic、ByteDance Seed、阿里、腾讯、百度等公开岗位信息归纳能力侧重。招聘页面会更新，岗位样本用于说明职责差异，不代表公司内部面试题库。
 
-现有[大语言模型面试复习资料](/blogs/llm-interview-review)已经系统推导 RLHF、PPO、DPO、GRPO/RLVR 和工具调用训练。本文聚焦岗位侧专项：按实际训练流水线组织知识，并强调数据、奖励、训练系统和评估之间的关系。
+本文将[大语言模型面试复习资料](/blogs/llm-interview-review)中的后训练内容独立整理并扩展，覆盖监督微调、偏好建模、策略优化、可验证奖励、工具交互与训练系统。通用面经保留模型结构、预训练、检索等主题；本专题集中解释后训练的目标、公式、实现选择和实验诊断。
 
 ## 一、后训练的目标与完整链路
 
@@ -103,17 +103,90 @@ $$
 
 PPO 的主要风险包括奖励过优化、策略更新过大、价值估计偏差、生成采样与训练策略不一致、长序列 token 级 credit assignment 噪声，以及 KL 过大或过小。排查不能只看 reward 曲线：还要看 KL、熵、长度、clip fraction、value loss、reward 分布和人工盲评，并检查高奖励样本是否真的更好。
 
+#### 3.1.1 KL 约束：限制策略追逐奖励的范围
+
+令 $pi_{\mathrm{ref}}$ 为冻结的参考策略，$pi_\theta$ 为待优化策略。带 KL 约束的目标可写为：
+
+$$
+\max_{\pi_\theta}\;\mathbb{E}_{x}\left[\mathbb{E}_{y\sim\pi_\theta(\cdot|x)}[r_\phi(x,y)]-\beta\,\mathrm{KL}\!\left(\pi_\theta(\cdot|x)\,\|\,\pi_{\mathrm{ref}}(\cdot|x)\right)\right]
+$$
+
+对自回归回答，序列对数概率可拆为 token 对数概率之和，因此序列级 log-ratio 也可分解到每个生成位置。实践中常用采样估计：
+
+$$
+\log\frac{\pi_\theta(y|x)}{\pi_{\mathrm{ref}}(y|x)}=\sum_{t=1}^{|y|}\log\frac{\pi_\theta(y_t|x,y_{<t})}{\pi_{\mathrm{ref}}(y_t|x,y_{<t})}
+$$
+
+$\beta$ 越大，策略越被约束在参考模型附近；越小，奖励提升空间更大，但过优化和行为漂移风险也更高。KL 既可以作为优化目标中的独立项，也可以转换成逐 token 惩罚并并入奖励。两种写法的具体估计方式、归一化和调度会影响训练，不能只凭配置名判断是否等价。KL 是非对称散度，不是距离；这里关注的是策略相对参考策略的偏移成本，而不是对称比较两个模型。
+
+#### 3.1.2 从期望奖励到策略梯度
+
+先固定 prompt $x$，目标是最大化当前策略采样回答的期望奖励：
+
+$$
+J(\theta)=\mathbb{E}_{y\sim\pi_\theta(\cdot|x)}[r(x,y)]
+=\int \pi_\theta(y|x)r(x,y)\,dy
+$$
+
+奖励对策略参数求导时视为固定函数。利用 $\nabla_\theta\pi_\theta=\pi_\theta\nabla_\theta\log\pi_\theta$，可把梯度写成从策略采样的期望：
+
+$$
+\nabla_\theta J(\theta)=\mathbb{E}_{y\sim\pi_\theta}\left[r(x,y)\nabla_\theta\log\pi_\theta(y|x)\right]
+$$
+
+语言模型的回答概率是各 token 条件概率的乘积，所以 $\log\pi_\theta(y|x)=\sum_t\log\pi_\theta(y_t|x,y_{<t})$。这使序列奖励能通过每个 token 的 log-prob 梯度回传。减去与动作无关的基线 $b(x)$ 不改变梯度期望，却可降低方差：
+
+$$
+\nabla_\theta J(\theta)=\mathbb{E}_{y\sim\pi_\theta}\left[(r(x,y)-b(x))\nabla_\theta\log\pi_\theta(y|x)\right]
+$$
+
+括号内的相对信号就是 advantage 的基本形式。PPO 用 critic 估计状态价值作为基线；GRPO 用同 prompt 的回答组构造相对基线。二者的区别首先是 advantage 的估计方式，而不是是否使用语言模型。
+
+log-derivative 技巧的作用是把对采样分布的梯度转换成可由模型反向传播的 log-prob 梯度。直接对 $y\sim\pi_\theta$ 求样本平均 $\nabla_\theta\pi_\theta(y)r(y)$ 并不等于原积分，因为采样期望会额外乘上一次 $\pi_\theta(y)$；改写为 $\pi_\theta\nabla\log\pi_\theta$ 后，采样密度正好与积分中的策略分布一致。再减去与动作无关的 baseline，可以降低方差而不改变期望梯度。
+
+#### 3.1.3 PPO、重要性比率与 GAE
+
+采样策略 $\pi_{\theta_{\mathrm{old}}}$ 与当前待更新策略 $\pi_\theta$ 不同。PPO 使用重要性比率修正这批旧策略样本，并通过 clipped surrogate 限制单次更新：
+
+$$
+\rho_t(\theta)=\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\mathrm{old}}}(a_t|s_t)},\qquad
+\mathcal{J}_{\mathrm{PPO}}=\mathbb{E}_t\left[\min\left(\rho_t\hat A_t,\,\mathrm{clip}(\rho_t,1-\epsilon,1+\epsilon)\hat A_t\right)\right]
+$$
+
+当 $\hat A_t>0$ 时目标提高该动作概率；当 $\hat A_t<0$ 时降低该动作概率。clip 限制有利方向上的过大更新，避免一次更新过度偏离采样策略。$\rho$ 负责校正策略版本差异，clip 控制更新幅度；它们并不解决奖励定义错误。
+
+语言模型常只有回答末尾的结果奖励。PPO 的 critic $V_\psi(s_t)$ 为每个生成前缀估值，TD 残差和 GAE 将延迟奖励分配到 token：
+
+$$
+\delta_t=r_t+\gamma V_\psi(s_{t+1})-V_\psi(s_t),\qquad
+\hat A_t^{\mathrm{GAE}(\gamma,\lambda)}=\sum_{l=0}^{\infty}(\gamma\lambda)^l\delta_{t+l}
+$$
+
+$\lambda$ 在短视的 TD 估计与高方差的整条轨迹回报之间调节偏差—方差。critic 通常用回报或 GAE 构造的 value target 做回归；它与 reward model 不同：RM 在 RL 前训练并冻结，回答级别打分；critic 在 RL 阶段更新，估计状态后续回报并提供逐 token 基线。
+
+例如两步回答轨迹中，第一步无即时奖励，第二步得到终局奖励 1。若 $V(s_0)=0.5$、$V(s_1)=0.6$、终止状态 $V(s_2)=0$，且 $\gamma=0.9,\lambda=0.95$，则 $\delta_0=0+0.9(0.6)-0.5=0.04$，$\delta_1=1-0.6=0.4$，第一步的优势为 $\hat A_0=\delta_0+\gamma\lambda\delta_1\approx0.382$。GAE 让终局奖励以折扣形式传回前面的 token；实际实现还需明确 EOS、终止态、截断和 bootstrap value 的处理。
+
+因此，PPO-RLHF 常同时涉及 policy、reference、RM 和 critic 四种角色。省掉 critic 会减少价值模型的训练开销，但不等于 rollout、reference log-prob 或 reward 计算成本消失。长回答的信用分配、RM 过优化和生成—训练概率不一致仍需独立诊断。
+
 ### 3.2 DPO：用偏好对直接更新策略
 
-DPO 将 KL 约束下的最优策略关系代入偏好目标，把显式的“先训练 RM，再做 PPO”改写为 chosen/rejected 对上的分类式损失。其一个常见写法是：
+DPO 从 KL 约束下的最优策略推导隐式奖励，再把它代入偏好模型，使奖励差转为策略与 reference 的对数概率差。给定固定 prompt $x$，KL 正则化奖励最大化问题的最优策略具有形式：
 
 $$
-\mathcal{L}_{\mathrm{DPO}} = -\mathbb{E}_{(x,y^+,y^-)}\left[\log \sigma\left(\beta \left[\log\frac{\pi_\theta(y^+|x)}{\pi_{\mathrm{ref}}(y^+|x)} - \log\frac{\pi_\theta(y^-|x)}{\pi_{\mathrm{ref}}(y^-|x)}\right]\right)\right]
+\pi^*(y|x)=\frac{1}{Z(x)}\pi_{\mathrm{ref}}(y|x)\exp\!\left(\frac{r(x,y)}{\beta}\right)
 $$
 
-$\beta$ 控制策略相对 reference 的偏离惩罚强度，具体效果也受数据、实现和训练超参数影响。DPO 不需要独立 reward model，也不需要在线 rollout，训练流程较简洁；代价是优化受离线偏好数据的覆盖与质量限制，模型不会通过当前策略的新采样主动探索未覆盖的回答区域。[DPO 论文](https://arxiv.org/abs/2305.18290)
+取对数并整理，可将奖励表示为最优策略相对 reference 的 log-ratio（加上只依赖 prompt 的归一化常数）。同一 prompt 的 chosen $y_w$ 与 rejected $y_l$ 做奖励差时，常数相消；代入 Bradley–Terry 偏好概率后得到：
+
+$$
+\mathcal{L}_{\mathrm{DPO}} = -\mathbb{E}_{(x,y_w,y_l)}\left[\log \sigma\!\left(\beta\left[\log\frac{\pi_\theta(y_w|x)}{\pi_{\mathrm{ref}}(y_w|x)}-\log\frac{\pi_\theta(y_l|x)}{\pi_{\mathrm{ref}}(y_l|x)}\right]\right)\right]
+$$
+
+当模型提高 chosen 相对 reference 的概率、同时降低 rejected 的相对概率时，括号内的偏好 logit 增大，损失下降。$\beta$ 控制偏好 logit 对策略偏移的敏感程度；它与 PPO 中 KL 系数的实现位置不同，数值不能直接互换。DPO 不需要单独训练 RM，也不需要训练期间在线 rollout；代价是策略更新受离线偏好数据覆盖限制，模型无法从当前策略的新采样中主动发现未出现在固定偏好对中的行为。[DPO 论文](https://arxiv.org/abs/2305.18290)
 
 “DPO 不需要奖励模型”应理解为训练目标不需要单独训练并调用一个 reward model 来提供更新信号，不是说偏好信息或隐含奖励概念消失了。DPO 仍依赖 reference policy 和偏好对。
+
+偏好优化的相关变体通常改变数据需求、reference 使用方式或目标约束：IPO 调整偏好目标以减轻某些过度优化行为；KTO 可使用单条回答的 desirable / undesirable 标签而非严格配对；ORPO 将监督似然与偏好项合到一个训练目标；SimPO 使用无 reference 的隐式奖励构造；R-DPO 一类方法显式处理回答长度偏差。名称相近不代表等价，比较时要对照论文的目标、数据标签与 loss reduction，并在同一数据和解码配置下验证。
 
 ### 3.3 偏好数据的质量控制
 
@@ -139,21 +212,118 @@ DPO 使用固定的偏好对，训练期间不必不断调用当前策略生成�
 
 ### 4.1 GRPO 与可验证奖励
 
-GRPO 对同一个 prompt 采样一组回答，按组内奖励相对表现构造 advantage，从而不使用 PPO 中独立的 critic。它由 DeepSeekMath 提出，论文将其描述为 PPO 的变体，并报告了更节省 value model 显存的训练方式。[DeepSeekMath 论文](https://arxiv.org/abs/2402.03300)
+GRPO 对同一个 prompt $x$ 从旧策略采样 $G$ 条回答 $y_1,\ldots,y_G$，由 verifier 或 reward model 得到整条回答的回报 $R_i$。组内相对 advantage 常写为：
 
-若同一组奖励都相同，组内比较就缺少区分信号；若 verifier 有漏洞，模型可能优化判分规则而不是任务本身。生成多个候选也会增加 rollout、奖励计算和长序列训练成本，因此“去掉 critic”不意味着 GRPO 总成本必然低于 PPO。任务是否有可靠可验证奖励，是选择 GRPO/RLVR 的关键前提。
+$$
+\bar R=\frac{1}{G}\sum_{j=1}^{G}R_j,\qquad
+\hat A_i=\frac{R_i-\bar R}{\mathrm{std}(R_1,\ldots,R_G)+\varepsilon}
+$$
 
-DeepSeek-R1-Zero 展示了不先做 SFT、直接通过大规模 RL 激发推理行为的实验路径；DeepSeek-R1 则加入冷启动数据与多阶段训练，以改善可读性和语言混杂等问题。两者说明训练配方取决于目标，不应总结成“纯 RL 一定优于 SFT”。[DeepSeek-R1 论文](https://arxiv.org/abs/2501.12948)
+同一回答中的 token 共用 $\hat A_i$。令 $\rho_{i,t}(\theta)$ 为新旧策略在第 $t$ 个 token 上的概率比，典型 clipped 目标为：
+
+$$
+\mathcal{J}_{\mathrm{GRPO}}(\theta)=\mathbb{E}\left[\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|y_i|}\sum_{t=1}^{|y_i|}\min\!\left(\rho_{i,t}\hat A_i,\,\mathrm{clip}(\rho_{i,t},1-\epsilon,1+\epsilon)\hat A_i\right)\right]
+$$
+
+GRPO 以组内比较替代独立 critic 的价值估计，因此省去一套需要反向训练的价值模型；但每个 prompt 要采样多条回答，rollout、奖励计算和长回答的 token 成本仍然存在。GRPO 由 DeepSeekMath 提出，原论文将其描述为 PPO 变体。[DeepSeekMath 论文](https://arxiv.org/abs/2402.03300)
+
+若某个 prompt 的回答奖励全相同，中心化后该组 advantage 都为零（标准差接近零时还要处理数值稳定性），组内比较就没有学习信号。对于二值正确性奖励，整组全对和整组全错都属于这种饱和组。相反，若 verifier 有漏洞，组内相对排名也会强化投机行为。因此，GRPO 的有效性既取决于优化目标，也取决于组内奖励是否有区分度。
+
+一个二值奖励例子：对同一题采样 4 条回答，奖励为 $(1,0,1,0)$，均值为 $0.5$、标准差为 $0.5$，标准化后的 advantage 为 $(+1,-1,+1,-1)$。正 advantage 提高两条正确回答中的生成 token 概率，负 advantage 降低两条错误回答的 token 概率。若组内奖励为 $(0,0,0,0)$，则标准差为零且没有可区分方向；加数值 epsilon 只能避免除零，不能创造学习信号。
+
+### 4.1.1 GRPO 与 RLVR 是两个不同维度
+
+GRPO 说明如何使用一组回答构造更新信号；RLVR（Reinforcement Learning with Verifiable Rewards）说明奖励如何获得。数学答案解析、代码测试、定理证明器、结构化约束校验都可作为 verifier。评分器需要对正确性或任务完成有足够覆盖，且错误判分能够被独立审计。规则可执行不代表规则完整：漏掉边界条件的单测仍可能奖励错误程序，答案解析器也可能拒绝数学等价形式。
+
+| 任务 | 常见 verifier | 主要盲点 |
+| --- | --- | --- |
+| 数学 | 符号化简、答案解析、数值等价检查 | 表达等价、单位、格式、猜测命中 |
+| 代码 | 编译、公开/隐藏单测、资源与安全限制 | 测试覆盖不足、硬编码、环境差异 |
+| 工具或 Agent | 环境状态变化、任务完成条件、结果校验 | 模拟器偏差、外部状态不稳定、奖励延迟 |
+| 开放文本 | rubric、人工比较、校准后的 LLM judge | 主观分歧、评审偏差、风格投机 |
+
+结果奖励（ORM）只评估最终答案，判据直接但长轨迹的信用分配较弱；过程奖励（PRM）对中间步骤或动作评分，反馈更密集，却增加标注成本和过程投机风险。选择粒度时应验证新增反馈能否提高独立任务成功率，而不是只提高 reward model 分数。
+
+DeepSeek-R1-Zero 展示了不先做 SFT、直接通过大规模 RL 激发推理行为的实验路径；DeepSeek-R1 则加入冷启动数据与多阶段训练，以改善可读性和语言混杂等问题。报告中的配方包括冷启动示范、推理 RL、拒绝采样后的 SFT，以及面向其他行为目标的后续 RL 阶段。它说明训练可在监督与在线 RL 间往返，不代表“纯 RL 一定优于 SFT”。[DeepSeek-R1 论文](https://arxiv.org/abs/2501.12948)
+
+可以把该类推理模型流程概括为：冷启动示范先提供可读的推理格式；可验证任务上的 RL 提升解题策略；拒绝采样筛选较好轨迹并做 SFT，把行为扩展到更多领域；后续 RL 再优化有帮助性、安全性和语言一致性等目标。之后可用强教师的回答或推理轨迹蒸馏小模型。每一步都改变数据分布和监督来源，因此要保留各阶段 checkpoint、数据版本和独立评测，不能只看最终 RL reward。
 
 ### 4.2 DAPO、Dr. GRPO 与 GSPO
 
-| 方法 | 关键改动 | 诊断重点 |
-| --- | --- | --- |
-| DAPO | 解耦 clip、动态采样、token-level loss 和超长回答 shaping | 动态采样改变 prompt 分布；检查奖励分布、回答长度和有效样本吞吐 |
-| Dr. GRPO | 移除 GRPO 目标中的响应长度归一化和组内 reward 标准差归一化 | 改变长短轨迹和不同难度 prompt 的梯度权重；明确“无偏”对应的目标 |
-| GSPO | 将重要性 ratio 和 clipping 从 token 级改为 sequence 级 | 关注 MoE 训练稳定性、序列概率的长度缩放和 ratio 分布 |
+这三种方法针对不同失效机制改动 GRPO 类目标。为便于比较，令 $\rho_{i,t}=\pi_\theta(y_{i,t}|x,y_{i,<t})/\pi_{\theta_{\mathrm{old}}}(y_{i,t}|x,y_{i,<t})$。$\hat A_i$ 是基于组内回报的回答级优势；每篇论文对 advantage 标准化、loss reduction 和 clipping 的定义要结合公式与代码核对。
 
-这些方法不是按发布时间排列的单向替代关系。DAPO 针对长推理 RL 中零梯度组、探索和回答长度问题提出组合改动；Dr. GRPO 针对特定归一化导致的长度及组间偏差；GSPO 采用序列级比率以降低 MoE 场景下 token-level 更新的不稳定。方法效果依赖奖励类型、loss 聚合、长度分布、采样实现和目标任务，复现实验时必须逐项核对配置。[DAPO 论文](https://arxiv.org/abs/2503.14476) [Dr. GRPO 论文](https://arxiv.org/abs/2503.20783) [GSPO 论文](https://arxiv.org/abs/2507.18071)
+#### DAPO：探索、有效样本与长回答的组合改动
+
+DAPO（Decoupled Clip and Dynamic Sampling Policy Optimization）在长 CoT、可验证奖励任务中提出四项主要机制，并开放训练代码与数据。其基础目标对组内所有有效回答 token 做全局 token 平均，而非先对每条回答取均值再平均：
+
+$$
+\mathcal{J}_{\mathrm{DAPO}}(\theta)=\mathbb{E}\!\left[\frac{1}{\sum_i|y_i|}\sum_{i=1}^{G}\sum_{t=1}^{|y_i|}\min\!\left(\rho_{i,t}\hat A_i,\,\mathrm{clip}(\rho_{i,t},1-\epsilon_{\mathrm{low}},1+\epsilon_{\mathrm{high}})\hat A_i\right)\right]
+$$
+
+相对 GRPO 的回答级平均，这种 reduction 让 token 整体等权，长回答包含的 token 对总更新贡献更大。该选择有利于学习长正确轨迹中的推理模式，也会让长低质量轨迹的 token 对梯度产生更大影响，因此需要与奖励质量、长度分布及截断策略一起分析。
+
+1. **Clip-Higher：上下限解耦。** 普通对称 clipping 会同样限制正向概率比上界。DAPO 将 $\epsilon_{\mathrm{low}}$ 与 $\epsilon_{\mathrm{high}}$ 分开，并适当放宽上界，使低概率但有正 advantage 的探索 token 有更大上升空间；下界保持约束以避免负 advantage 轨迹被过度压低。它处理的是探索受限与熵过早下降，不保证熵永远维持在高位。
+2. **Dynamic Sampling：过滤无区分组并补足有效 batch。** 对二值验证奖励，全对组和全错组的组内 advantage 都缺少区分信号。训练系统过采样 prompt，过滤正确率为 0 或 1 的组，再继续生成直到有效 batch 填满。它提升有效梯度样本比例，但会改变参与更新的 prompt 分布；若题目难度、重试次数或超时样本分布不同，应记录采样概率与成本。
+3. **Token-Level Policy Gradient Loss：改为全局 token 平均。** 其核心是把分母从“回答数 × 每条回答内 token 平均”改为 batch 中有效 response token 总数。结果是不同长度轨迹对梯度的权重不同于 sample-level GRPO；比较实验必须固定分母、mask 和回答长度处理。
+4. **Overlong Reward Shaping：区分截断与接近上限。** 直接把所有被截断的回答都判错，会将“推理正确但超过预算”和“推理错误”混为一谈。DAPO 报告了对截断样本过滤 loss，以及在最大长度附近逐渐增加惩罚的 Soft Overlong Punishment。以回答长度 $|y|$、最大长度 $L_{\max}$ 和惩罚缓冲区 $L_{\mathrm{cache}}$ 表示，其长度项为：
+
+$$
+R_{\mathrm{length}}(y)=\begin{cases}
+0,&|y|\le L_{\max}-L_{\mathrm{cache}}\\
+\dfrac{(L_{\max}-L_{\mathrm{cache}})-|y|}{L_{\mathrm{cache}}},&L_{\max}-L_{\mathrm{cache}}<|y|\le L_{\max}\\
+-1,&|y|>L_{\max}
+\end{cases}
+$$
+
+中间区间的惩罚从 0 线性下降到 -1，再与任务奖励组合；这给模型一个接近预算上限时逐步收束的信号。奖励符号、tokenization 后的长度定义、超长样本 mask 和终止 token 处理都属于复现配置。[DAPO 论文](https://arxiv.org/abs/2503.14476)
+
+#### Dr. GRPO：去除两类特定归一化偏差
+
+Dr. GRPO（Group Relative Policy Optimization Done Right）分析了常见 GRPO 实现中的两项 response/question 权重。其基线目标含有每个回答的 $1/|y_i|$，并用组内奖励标准差归一化 advantage：
+
+$$
+\hat A_i^{\mathrm{GRPO}}=\frac{R_i-\bar R}{\mathrm{std}(R_1,\ldots,R_G)},\qquad
+\mathcal{J}_{\mathrm{GRPO}}\propto\frac{1}{G}\sum_i\frac{1}{|y_i|}\sum_t \ell_{i,t}
+$$
+
+第一项按回答长度给 token 梯度重新加权：正 advantage 下，较短回答的每 token 权重更大；负 advantage 下，较长错误回答的惩罚被稀释。第二项让不同 prompt 的组内标准差成为权重：奖励方差较小的题可能被放大，题目难度也会影响更新贡献。
+
+Dr. GRPO 移除这两个随回答或 prompt 变化的归一化项，使用中心化回报作为 advantage，并用固定常数（例如生成预算 $L$）归一化 token loss：
+
+$$
+\hat A_i^{\mathrm{Dr}}=R_i-\bar R,\qquad
+\mathcal{J}_{\mathrm{Dr.GRPO}}(\theta)=\mathbb{E}\!\left[\frac{1}{G L}\sum_{i=1}^{G}\sum_{t=1}^{|y_i|}\min\!\left(\rho_{i,t}\hat A_i^{\mathrm{Dr}},\,\mathrm{clip}(\rho_{i,t},1-\epsilon,1+\epsilon)\hat A_i^{\mathrm{Dr}}\right)\right]
+$$
+
+$L$ 是固定尺度，不随每条回答的实际长度改变；实现时仍须定义 padding mask、被截断序列和有效 token 的处理。论文所谓“unbiased”针对其分析的策略梯度目标与估计方式，不等于所有数据、奖励、裁剪和 loss 聚合下都无偏，也不代表所有 prompt 得到完全相同的任务价值。该方法旨在避免特定归一化带来的长度和组间偏差，并观察回答 token 效率与错误答案长度变化。[Dr. GRPO 论文](https://arxiv.org/abs/2503.20783)
+
+#### GSPO：以回答为单位做重要性校正和裁剪
+
+GRPO 常用 token-level importance ratio，而结果奖励通常作用于整条回答。GSPO（Group Sequence Policy Optimization）据此把 ratio 与 clipping 单位改为序列。序列概率是 token 概率的乘积；论文使用其长度归一化的几何平均比率，避免长序列的乘积数值极端：
+
+$$
+s_i(\theta)=\left(\frac{\pi_\theta(y_i|x)}{\pi_{\theta_{\mathrm{old}}}(y_i|x)}\right)^{1/|y_i|}
+=\exp\!\left(\frac{1}{|y_i|}\sum_{t=1}^{|y_i|}\log\rho_{i,t}\right)
+$$
+
+随后对每条回答只计算一个 clipped surrogate：
+
+$$
+\mathcal{J}_{\mathrm{GSPO}}(\theta)=\mathbb{E}\!\left[\frac{1}{G}\sum_{i=1}^{G}\min\!\left(s_i(\theta)\hat A_i,\,\mathrm{clip}(s_i(\theta),1-\epsilon,1+\epsilon)\hat A_i\right)\right]
+$$
+
+在不考虑 clipping 分段的梯度表达式中，序列比率的对数导数是 token log-prob 梯度的平均。因此一个回答的 token 共享序列级权重；GRPO 则分别用每个 token 的 ratio 加权。GSPO 的归一化 ratio 和 token ratio 的取值尺度不同，clip 范围也可能相差多个数量级，不能复用 GRPO 的 clipping 超参。
+
+论文重点讨论 MoE：训练更新后专家路由可能变化，逐 token 概率比会受 token 路由变化影响而波动；序列级 ratio 汇总 token log-prob 变化，实证上改善了 MoE RL 稳定性，并减少对 Routing Replay 等额外路由回放机制的依赖。它仍需要检查 sequence ratio 分布、长度分桶下的 clipping 比例、策略滞后及奖励质量。论文还给出 GSPO-token 变体：保持 sequence-level ratio 数值，同时允许 token-specific advantage，适用于多轮任务需要细粒度 credit assignment 的情况。[GSPO 论文](https://arxiv.org/abs/2507.18071)
+
+| 维度 | DAPO | Dr. GRPO | GSPO |
+| --- | --- | --- | --- |
+| 主要诊断 | 探索受限、无效组、长回答 loss 权重与超长截断噪声 | 回答长度归一化和组标准差归一化带来的特定偏差 | token ratio 在长回答及 MoE 路由变化下不稳定 |
+| ratio / 聚合 | token ratio；batch 有效 token 全局平均 | token ratio；固定预算尺度，不按实际回答长度除 | 长度归一化 sequence ratio；按序列裁剪 |
+| 数据处理 | 可过滤全对/全错组并动态补样 | 不以动态采样为核心机制 | 不以动态采样为核心机制 |
+| 关键监控 | 有效组比例、长度、熵、超长率、样本来源 | 正确/错误回答长度、各 prompt 梯度权重与 token 效率 | sequence ratio、裁剪率、MoE expert/routing 稳定性 |
+
+这些方法不是按发布时间排列的单向替代关系。DAPO 是一组配合长推理 RL 的数据采样与优化选择；Dr. GRPO 针对 GRPO 具体归一化项分析长度和组间权重；GSPO 改变 importance correction 与 clipping 粒度。效果取决于奖励类型、loss reduction、长度分布、生成后端和任务。比较时应固定基座、prompt、奖励、采样数、最大长度和 learner 配置，再分别消融每个改动。
 
 ### 4.3 变体比较的设计轴
 
@@ -164,7 +334,7 @@ DeepSeek-R1-Zero 展示了不先做 SFT、直接通过大规模 RL 激发推理�
 3. 样本筛选：是否过滤同组全对/全错样本、动态重采样或基于难度调度。
 4. 截断与奖励 shaping：长度上限附近如何惩罚，截断回答算失败还是部分有效。
 
-Dr. GRPO 的“unbiased”指它针对论文分析的特定策略梯度目标去除了特定归一化偏差，并非所有训练设置都无偏。2026 年的后续理论工作指出，在 outcome-reward 设定下，梯度无偏与轨迹贡献长度不变一般不能同时满足；比较长度归一化时，需要先说明优化目标，而不是只说某公式“正确”。[关于无偏与长度不变性的后续分析](https://arxiv.org/abs/2607.23364)
+Dr. GRPO 的“unbiased”指其论文所分析目标下移除特定归一化偏差，并非所有训练设置都无偏。后续理论分析也指出，在 outcome-reward 设定下，梯度无偏与轨迹贡献长度不变一般不能同时满足；比较长度归一化时，需要先说明优化目标，而不是仅凭“无偏”标签判断优劣。[关于无偏与长度不变性的后续分析](https://arxiv.org/abs/2607.23364)
 
 方法比较应固定模型、prompt 集、奖励、rollout 数、最大长度和生成后端，再做单组件消融。若一次同时换 verifier、length normalization、采样温度、奖励 shaping 和优化器，就无法归因提升来源。
 
@@ -172,15 +342,45 @@ Dr. GRPO 的“unbiased”指它针对论文分析的特定策略梯度目标去
 
 ### 5.1 轨迹与环境定义
 
-当动作不只是下一个 token，而包含工具调用或多步环境操作时，训练样本扩展为交互轨迹。需要定义环境状态、动作空间、工具结果、部分可观测信息、奖励归因和 episode 终止条件。关键问题包括：环境是否可复现、工具失败如何计分、奖励延迟如何归因、轨迹过长如何截断、策略版本变化后旧轨迹是否仍有效，以及模型是否学会安全地停止或升级给人。
+工具使用至少包含三种可分开评估的能力：**格式**——按工具协议产生合法调用；**时机与选择**——判断是否需要调用、选哪一个工具、参数填什么；**结果利用**——读取工具返回，决定回答、修正参数、重试或继续调用。格式通常可用 SFT 学习；调用决策依赖正反例和任务成本；结果利用需要真实、完整的交互轨迹。
 
-### 5.2 任务评测
+轨迹需保存 prompt、工具 schema、assistant 消息、结构化 action、工具 observation、环境状态、时间戳、策略版本、错误码和终止原因。工具调用是模型 action，工具返回是环境 observation；若只保存最终答案，就丢失了学习多步决策与错误恢复所需的监督。环境应定义动作空间、可见状态、超时和失败规则、奖励归因以及 episode 终止条件。
 
-Agent 任务的评测不能只看最终回答文本。应同时记录任务成功率、步骤数、工具调用正确率、无效调用、超时/恢复、安全违规、成本和不同环境版本下的鲁棒性。若环境本身不代表真实任务，策略可能只适配模拟器。
+工具协议可采用 JSON/JSON Schema、XML 或专用控制 token。训练时必须固定 chat template 和 token 边界，确保工具定义与调用历史进入上下文；推理时可用 grammar 或 schema constrained decoding mask 掉不合法 token。SFT 学会“会输出”，受约束解码负责在指定语法下保证“输出合法”，二者作用不同。工具 description 是模型判断工具用途、选择接口和填写参数的重要上下文，描述含混会直接转化成调用错误。
 
-### 5.3 轨迹数据质量
+受约束解码在每个生成步维护当前语法状态，把无法到达合法终态的 token logits 置为 $-\infty$，再仅在合法 token 集合中采样。正则可编译为 DFA，CFG 可由解析器维护状态栈，JSON Schema 可转成相应文法；工程上需要处理字符与 tokenizer token 边界，并缓存每种状态下允许的 token。它能强制语法合法，不能保证工具选择正确、参数语义正确或任务成功。
 
-Agent 轨迹应记录 observation、action、tool call、tool result、环境状态、错误码、终止原因、策略版本和环境版本。数据要区分真实成功轨迹、修复轨迹、失败轨迹与合成轨迹，避免把不可执行的理想过程误当成真实环境反馈。
+一条代码修复轨迹应记录“运行测试 → 读取错误 → 检查源码 → 修改 → 重跑测试 → 汇报结果”。每次工具调用都需要环境结果支撑下一步，而不是把理想化的工具调用过程当成真实成功轨迹。
+
+### 5.2 调用时机、奖励与轨迹数据
+
+调用时机是决策问题：过少调用会在缺少实时信息或执行能力时猜测；过多调用增加延迟、成本和失败面。训练集要同时包含需要调用与可直接回答的任务，也要构造“看起来像需要工具，但答案已在上下文中”的负样本，避免模型学到逢问必调。
+
+可对最终任务成功、工具选择、参数正确、结果利用、无效调用次数和成本分别计分。对多余调用施加成本项时，可将目标写成：
+
+$$
+R(\tau)=R_{\mathrm{task}}(\tau)-\lambda_{\mathrm{call}}N_{\mathrm{unnecessary}}(\tau)-\lambda_{\mathrm{cost}}C(\tau)
+$$
+
+该式表达取舍而非通用奖励配方：调用惩罚过大可能使模型漏调，过小则容易 over-calling；参数错误、工具超时、权限拒绝与环境不可用也应区分，避免把系统故障都归咎于策略。
+
+训练数据来源包括人工轨迹、教师模型建议后经真实执行验证的合成轨迹、在线成功轨迹和带错误恢复的失败轨迹。保留前至少做 schema 校验、真实执行、结果利用检查和抽样人工审查；对同一 prompt 的正确轨迹、漏调轨迹和多余调用轨迹，可构造 DPO 偏好对。在线 RL 则可对多步完成结果给稀疏 outcome reward，并使用经过验证的工具步骤信号做辅助奖励。
+
+公开数据构造路线可作方法参考：Toolformer 通过候选 API 调用、真实执行和样本筛选来形成自监督工具数据；API 文档驱动的数据集把自然语言任务映射到接口与参数；多步 Agent 数据则强调在环境中执行并筛选轨迹。自建数据同样应按“任务生成 → 工具真实执行 → 结果检查 → 轨迹清洗 → 版本化”闭环，不应仅靠语言模型判断自己生成的调用是否可用。
+
+失败重试应依赖 observation：将编译错误、HTTP 状态或参数错误放回上下文，训练模型基于信息修正，而非无依据重复调用。异步环境还要记录工具版本、外部数据时间和幂等键，避免重放轨迹时副作用不一致。
+
+### 5.3 任务评测
+
+Agent 任务的评测不能只看最终回答文本。至少应分别报告 schema 合法率、工具选择准确率、参数正确率、必要调用召回率、多余调用率、工具结果利用率、多步任务完成率、无效重试、超时/恢复、安全违规、调用成本和延迟。工具基准可对参数做 AST 或语义比较；代码 Agent 还需真实仓库测试和隐藏测试。结果应按任务难度、工具类型、环境版本与失败原因分桶；若环境不代表真实任务，模型可能只适配模拟器。公开 benchmark 还需排查题目、仓库和测试样例的预训练污染。
+
+### 5.4 轨迹数据质量
+
+Agent 轨迹应记录 observation、action、tool call、tool result、环境状态、错误码、终止原因、策略版本和环境版本。数据要区分真实成功轨迹、修复轨迹、失败轨迹与合成轨迹，避免把不可执行的理想过程误当成真实环境反馈。并行调用、拒绝调用、权限错误和安全停止也要出现在训练分布中。
+
+训练系统可分层兜底：SFT 学轨迹与协议；偏好优化或 RL 学何时调用、如何选择与是否成功；路由器可在高风险场景限制模型可见工具；constrained decoding 保证结构合法；执行器负责权限、超时、重试上限和审计。任何一层都不能代替其余层的评测。
+
+训练工具能力时可按课程逐步增加难度：先学单工具和确定参数，再混入无需调用的任务与相似工具选择，之后训练多轮执行、并行调用、错误恢复和权限拒绝。工具样本占比过高会让模型过度调用或损害直接问答能力，因此应混合通用对话与明确的“不调用”轨迹，并用实际调用成本评估收益。
 
 ## 六、奖励设计、评测与实验方法
 
@@ -337,6 +537,30 @@ $$
 | 训练后原有能力明显退化 | 数据配比、KL 锚定、训练时长、评测切片 | base/SFT/RL 多 checkpoint 对照、通用任务回归和领域切片 |
 
 诊断顺序应先验证数据与实现正确性，再看指标定义和策略优化，再定位分布式性能问题。单个总 reward 或总 tokens/s 无法区分这些原因。
+
+### 7.6 参数高效微调与能力沉淀
+
+全量微调会更新基座全部参数，优化器状态和梯度开销较高。LoRA 将权重增量限制在低秩分解中：
+
+$$
+W'=W+\Delta W=W+BA,\qquad A\in\mathbb{R}^{r\times k},\;B\in\mathbb{R}^{d\times r},\;r\ll\min(d,k)
+$$
+
+冻结 $W$，只训练 $A,B$；一些实现用 $\alpha/r$ 缩放增量。训练后可以将 $BA$ 合并到 $W$，因此基础推理结构无需增加 adapter 路径。秩、目标层、学习率、数据量和模块覆盖决定适配能力；LoRA 降低可训练参数，不保证可注入任意新知识，也不自动解决数据偏差和灾难性遗忘。
+
+| 方法 | 改变的对象 | 主要取舍 |
+| --- | --- | --- |
+| LoRA / Adapter / Prefix tuning | 可训练参数或附加模块 | 降低微调成本；容量与推理结构各有差异 |
+| QLoRA | 量化基座加 LoRA 参数更新 | 降低基座权重显存；需关注量化误差和训练稳定性 |
+| 拒绝采样微调（RFT） | 先采多个回答，再筛选高质量结果做 SFT | 比在线策略优化简单；筛选器会引入选择偏差 |
+| 蒸馏 | 用教师 logits 或生成轨迹监督学生 | 将教师能力转移到小模型；受教师覆盖与轨迹质量限制 |
+| 量化 / 剪枝 | 推理权重精度或模型结构 | 主要为部署压缩，需要评估质量、速度和硬件支持 |
+
+蒸馏既可以用硬目标做交叉熵，也可以让学生拟合教师的温度软分布。量化、剪枝和蒸馏更接近模型交付与压缩，不应和 SFT、偏好优化、RL 的监督信号混为同一类算法；但后训练岗位常需要评估训练收益能否在部署预算下保留。
+
+LoRA 的秩 $r$ 控制可表达的增量子空间大小；缩放 $\alpha/r$ 控制注入强度，target modules 决定适配范围，常见选择包括 attention 的 Q/V 或更广的线性层。低秩假设是工程取舍，不保证所有任务的最优更新天然低秩。QLoRA 冻结量化基座并训练 LoRA adapter，显存需求可降，但需记录量化格式、计算精度、梯度检查点与优化器设置。部署压缩时还要区分：量化改变数值精度，剪枝删去参数或结构，蒸馏训练另一个学生模型；可组合使用，但质量损失和硬件加速效果必须实测。
+
+常见辅助方法也应与主目标区分：RFT 先采样并筛选回答，再转成 SFT 数据；RLAIF 用模型或规则生成偏好监督；PRM 为中间推理步骤提供分数，ORM 只给最终结果；拒绝采样和蒸馏将高质量策略行为转为静态训练样本。它们可以出现在同一训练配方中，但各自的监督来源和失败模式不同。
 
 ## 八、各家大厂公开岗位要求的侧重
 
