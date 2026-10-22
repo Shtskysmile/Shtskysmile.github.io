@@ -64,7 +64,7 @@ $$
 \mathcal{L}_{\mathrm{SFT}}(\theta) = -\sum_{t \in \mathcal{T}_{\mathrm{target}}} \log \pi_{\theta}(y_t \mid x, y_{<t})
 $$
 
-关键实现是确定集合 \(\mathcal{T}_{\mathrm{target}}\)：很多对话训练只对 assistant 的回答部分计算 loss，user、system、padding 等 token 需要正确 mask。模板边界或 mask 错误会让模型学习复述用户消息、输出错误角色标记，或把填充 token 当成目标。多轮对话还要确认是否仅训练 assistant turn、工具调用结构是否进入目标，以及截断发生时是否破坏完整轮次。
+关键实现是确定集合 $\mathcal{T}_{\mathrm{target}}$：很多对话训练只对 assistant 的回答部分计算 loss，user、system、padding 等 token 需要正确 mask。模板边界或 mask 错误会让模型学习复述用户消息、输出错误角色标记，或把填充 token 当成目标。多轮对话还要确认是否仅训练 assistant turn、工具调用结构是否进入目标，以及截断发生时是否破坏完整轮次。
 
 ### 2.2 数据质量检查
 
@@ -91,7 +91,7 @@ $$
 
 ### 3.1 Reward Model 与 RLHF
 
-偏好数据通常为同一 prompt 下的一对答案 \((y^+, y^-)\)，标注其中更好的答案。Bradley–Terry 偏好模型常写为：
+偏好数据通常为同一 prompt 下的一对答案 $(y^+, y^-)$，标注其中更好的答案。Bradley–Terry 偏好模型常写为：
 
 $$
 P(y^+ \succ y^- \mid x) = \sigma\big(r_{\phi}(x,y^+) - r_{\phi}(x,y^-)\big)
@@ -111,7 +111,7 @@ $$
 \mathcal{L}_{\mathrm{DPO}} = -\mathbb{E}_{(x,y^+,y^-)}\left[\log \sigma\left(\beta \left[\log\frac{\pi_\theta(y^+|x)}{\pi_{\mathrm{ref}}(y^+|x)} - \log\frac{\pi_\theta(y^-|x)}{\pi_{\mathrm{ref}}(y^-|x)}\right]\right)\right]
 $$
 
-\(\beta\) 控制策略相对 reference 的偏离惩罚强度，具体效果也受数据、实现和训练超参数影响。DPO 不需要独立 reward model，也不需要在线 rollout，训练流程较简洁；代价是优化受离线偏好数据的覆盖与质量限制，模型不会通过当前策略的新采样主动探索未覆盖的回答区域。[DPO 论文](https://arxiv.org/abs/2305.18290)
+$\beta$ 控制策略相对 reference 的偏离惩罚强度，具体效果也受数据、实现和训练超参数影响。DPO 不需要独立 reward model，也不需要在线 rollout，训练流程较简洁；代价是优化受离线偏好数据的覆盖与质量限制，模型不会通过当前策略的新采样主动探索未覆盖的回答区域。[DPO 论文](https://arxiv.org/abs/2305.18290)
 
 “DPO 不需要奖励模型”应理解为训练目标不需要单独训练并调用一个 reward model 来提供更新信号，不是说偏好信息或隐含奖励概念消失了。DPO 仍依赖 reference policy 和偏好对。
 
@@ -215,7 +215,7 @@ Agent 轨迹应记录 observation、action、tool call、tool result、环境状
 
 ### 6.5 多目标奖励与标度
 
-复合目标常写为加权和 \(R=\sum_k w_k R_k\)，其中正确性、安全、格式、成本、长度和用户偏好可能相互冲突。奖励尺度不匹配时，即便某项权重很小，也可能因数值范围更大而主导总奖励。训练前应查看每个子奖励的范围、分布、相关性和梯度贡献；训练中记录子奖励与综合奖励，独立评估未直接纳入优化的安全和能力指标。
+复合目标常写为加权和 $R=\sum_k w_k R_k$，其中正确性、安全、格式、成本、长度和用户偏好可能相互冲突。奖励尺度不匹配时，即便某项权重很小，也可能因数值范围更大而主导总奖励。训练前应查看每个子奖励的范围、分布、相关性和梯度贡献；训练中记录子奖励与综合奖励，独立评估未直接纳入优化的安全和能力指标。
 
 奖励归一化、截断、裁剪和动态权重都会改变优化目标。动态调整权重时需记录调度状态；否则同一 reward 曲线跨阶段不可直接比较。对多个目标可分别报告 Pareto 前沿，避免把单一加权总分当成无价值判断的客观排序。
 
