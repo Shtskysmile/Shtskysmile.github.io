@@ -4,6 +4,8 @@ LLM post-training（后训练）岗位的目标，是把预训练模型调整为
 
 本文面向大模型后训练算法、研究工程和训练工程岗位，整理核心知识，并对照截至 2026 年 10 月可查到的 OpenAI、Anthropic、ByteDance Seed、阿里、腾讯、百度等公开岗位信息归纳能力侧重。招聘页面会更新，岗位样本用于说明职责差异，不代表公司内部面试题库。
 
+现有[大语言模型面试复习资料](/blogs/llm-interview-review)已经系统推导 RLHF、PPO、DPO、GRPO/RLVR 和工具调用训练。本文聚焦岗位侧专项：数据和奖励如何进入训练，推理 RL 算法如何演进，异步训练系统如何排错，以及不同岗位对这些环节的要求。
+
 ## 一、先区分岗位：后训练不是单一工作
 
 同一个“LLM post-training”标题，可能对应三类职责。
@@ -154,11 +156,17 @@ DeepSeek-R1-Zero 展示了不先做 SFT、直接通过大规模 RL 激发推理�
 
 ### 8.1 数据与监督信号
 
-- **SFT 示范数据**：对话模板、角色边界、assistant token loss mask、packing、截断、多轮数据一致性、去重与污染检查。
-- **偏好数据**：chosen/rejected 对的采样方式、标注规范、标注者一致性、位置偏差、长度偏差、难例分布和数据来源差异。
-- **奖励与验证器**：Bradley–Terry RM、规则 grader、代码执行器、数学答案验证、LLM-as-a-judge；区分答案正确性、过程质量和安全目标。
-- **合成数据**：教师模型生成、筛选与去偏、难度控制、反事实和对抗样本、合成数据的独立验证。
-- **Agent 轨迹**：状态、动作、工具调用、环境反馈、终止条件、失败恢复与轨迹质量标记。
+- **SFT 示范数据**：除对话模板、角色边界与 assistant token loss mask 外，还要确认样本是否包含完整多轮上下文，tool call 与 tool result 的特殊 token 是否保真，packing 是否跨样本污染上下文，截断是否切断答案或工具调用。长推理样本需明确监督完整思维链、最终答案，还是特定可见过程字段。
+- **偏好数据**：chosen/rejected 对应同一个 prompt 和相同上下文；两者差异应能代表目标偏好，而非仅有长度、语气或格式差异。数据设计要规定平局、不可比较样本、标注者分歧、位置随机化、多轮历史、拒答、引用和工具轨迹的标注方式。
+- **奖励与验证器**：Bradley–Terry RM 学成对排序；规则 grader、代码执行器、数学验证器和 LLM judge 有不同适用域。要分别检查排序准确率、校准、跨领域泛化与对抗稳健性，不能把 RM 分数直接解释为答案质量的绝对刻度。
+- 合成数据：教师模型生成后需通过规则筛选、模型交叉评审、抽样人工复核和独立验证集。过滤不能只保留容易题或单一写法，否则训练分布会失去难例、多解和真实用户表达。
+- **Agent 轨迹**：记录 observation、action、tool call、tool result、环境状态、错误码、终止原因、策略版本和环境版本。训练数据应区分真实成功轨迹、被修复轨迹、失败轨迹与合成轨迹，避免把不可执行的“理想过程”误当成真实环境反馈。
+- 数据配比与课程：按能力、来源、质量、难度和长度分桶，记录每类样本被采样的概率。静态混合比例与动态难度调度会改变梯度来源；提高难例比例的同时，应监控基础指令遵循、语言质量和安全行为是否退化。
+- 数据污染与泄漏：评测题、隐藏单测、答案字符串和近重复题要与训练/合成数据隔离。检索式去重、n-gram、语义近邻和来源追踪分别捕捉不同污染形式，必须保留原始来源与过滤记录供审计。
+
+偏好数据和 Reward Model 的训练集常把同一 prompt 下的偏好排序转换为 pairwise loss。工程检查包括：chosen 与 rejected 是否使用相同上下文；偏好证据是否明确；是否通过随机交换展示顺序测量位置偏差；训练与验证是否按 prompt 来源切分；RM 的分数是否在不同领域、长度和难度上校准。
+
+RM 常见失效模式包括：训练集里的偏好差异容易区分，但部署时遇到细微质量差别；RM 学到冗长、礼貌、结构化等表面信号；被策略优化后，RM 评分上涨但盲评下降；同一 RM 在不同长度或领域上系统偏置。可用多 RM 集成、偏好不确定度、拒绝优化低置信区域、独立 verifier 和定期重标注缓解，代价是更多推理与维护成本。
 
 ### 8.2 训练目标与算法
 
@@ -169,21 +177,139 @@ DeepSeek-R1-Zero 展示了不先做 SFT、直接通过大规模 RL 激发推理�
 | PPO-RLHF | policy gradient、ratio clipping、advantage/GAE、critic、reference KL | KL、entropy、clip fraction、value loss、reward 与人工质量背离 |
 | DPO | reference-relative log-prob ratio、偏好分类目标、温度/β 与数据分布 | chosen/rejected margin、reference drift、过拟合和分布外退化 |
 | GRPO / RLVR | 同 prompt 多 rollout、组内相对 advantage、verifier 奖励 | 组内奖励方差、全对/全错、采样成本、格式或 verifier 投机 |
+| DAPO | 解耦 clip、动态采样、token-level loss 和超长回答 shaping | 动态采样改变 prompt 分布；检查奖励分布、回答长度和有效样本吞吐 |
+| Dr. GRPO | 移除 GRPO 目标中的响应长度归一化和组内 reward 标准差归一化 | 改变长短轨迹和不同难度 prompt 的梯度权重；明确“无偏”对应的目标 |
+| GSPO | 将重要性 ratio 和 clipping 从 token 级改为 sequence 级 | 关注 MoE 训练稳定性、序列概率的长度缩放和 ratio 分布 |
 | 蒸馏 / rejection sampling | 候选生成、筛选、教师信号和学生拟合 | 选择偏差、教师错误传播、覆盖与多样性损失 |
 
-### 8.3 推理与 Agent 后训练
+这些方法不是按发布时间排列的单向替代关系。DAPO 针对长推理 RL 中零梯度组、探索和回答长度问题提出组合改动；Dr. GRPO 针对特定归一化导致的长度及组间偏差；GSPO 采用序列级比率以降低 MoE 场景下 token-level 更新的不稳定。方法效果依赖奖励类型、loss 聚合、长度分布、采样实现和目标任务，复现实验时必须逐项核对配置。[DAPO 论文](https://arxiv.org/abs/2503.14476) [Dr. GRPO 论文](https://arxiv.org/abs/2503.20783) [GSPO 论文](https://arxiv.org/abs/2507.18071)
+
+### 8.3 奖励和 Verifier 设计
+
+#### 奖励来源应与任务可判定性匹配
+
+| 任务特征 | 可用反馈 | 典型训练方式 | 需要重点检查 |
+| --- | --- | --- | --- |
+| 唯一正确答案，机器可判定 | exact match、解析器、单测、定理验证 | SFT + rejection sampling 或 RLVR | 答案格式、测试覆盖、猜测概率、隐藏测试泄漏 |
+| 答案开放但可分项 rubric | 分项规则、专家标签、经过验证的 LLM judge | SFT、DPO、RM + PPO/GRPO | rubric 一致性、评审模型偏差、不同维度权重 |
+| 偏好主观且多解 | 人类比较、质量排序、安全标注 | DPO、RM + RLHF、RLAIF | 标注者分歧、文化与领域偏差、目标冲突 |
+| 多步交互任务 | 环境状态、工具结果、任务完成度、成本 | Agentic SFT、在线 RL、环境反馈 | 环境保真、奖励延迟、工具错误、策略外轨迹 |
+
+“任务可验证”不等于“奖励无误”。单测可能没覆盖隐藏边界；数学答案解析可能把等价表达判错；grader 可能只检查格式而漏掉内容；LLM judge 可能偏好自身风格。奖励上线前需执行 mutation test：故意改变模型输出或程序行为，确认评分器会对正确性、安全和约束违例作出预期反应。
+
+#### 稀疏结果奖励与过程奖励
+
+**Outcome reward** 只评估最终答案或任务是否完成，信号定义清晰，比较不容易被中间过程的主观评分污染；但长轨迹中的 credit assignment 较弱。**Process reward** 对中间步骤、动作或子目标给反馈，能更早指出偏差，也会引入更多标注成本、奖励偏差和过程投机。
+
+代码任务可将测试分层：语法/静态检查、公开单测、隐藏单测、集成运行、资源限制和安全检查分别记分。数学任务可区分最终答案验证、推理步骤一致性和格式要求。Agent 任务可拆成子目标完成、工具选择、参数正确、环境状态改变、总时长与成本，但需避免各子项重复计算同一结果。
+
+#### 多目标奖励与标度
+
+复合目标常写为加权和 \(R=\sum_k w_k R_k\)，其中正确性、安全、格式、成本、长度和用户偏好可能相互冲突。奖励尺度不匹配时，即便某项权重很小，也可能因数值范围更大而主导总奖励。训练前应查看每个子奖励的范围、分布、相关性和梯度贡献；训练中记录子奖励与综合奖励，独立评估未直接纳入优化的安全和能力指标。
+
+奖励归一化、截断、裁剪和动态权重都会改变优化目标。动态调整权重时需记录调度状态；否则同一 reward 曲线跨阶段不可直接比较。对多个目标可分别报告 Pareto 前沿，避免把单一加权总分当成无价值判断的客观排序。
+
+#### Verifier 的有效学习区间
+
+在线 RL 需要策略既能偶尔成功，也能在采样结果之间产生可区分的奖励。若样本组几乎全错，当前策略可能缺少可强化的成功轨迹；若几乎全对，组内 advantage 接近零，更新信号饱和。可按难度分桶估计 pass@1、组内成功比例、奖励方差和单位 token 的有效梯度样本数，据此调节课程、采样数或 verifier 粒度。
+
+多选题的命中率可能来自随机猜测；短答案可能只给了模型部分奖励捷径。可通过增加干扰类别、要求结构化中间产物、运行隐藏测试、对答案做语义等价检查或使用执行反馈，减少随机猜中带来的虚假梯度。OpenAI 对可编程 grader 的 RFT 指南也强调任务要有可判定性，当前模型应有非零但未饱和的成功空间。[RFT grader 设计](https://developers.openai.com/api/docs/guides/rft-use-cases)
+
+### 8.4 从 GRPO 到 DAPO、Dr. GRPO 与 GSPO
+
+经典 GRPO 与一系列变体的差异，主要落在四个设计轴上：
+
+1. 权重粒度：每 token 独立 ratio，还是整条 response 共享 sequence ratio。
+2. 长度聚合：按 response 平均、按所有 token 平均，或不按长度归一化。不同口径会重新分配长短轨迹的梯度权重。
+3. 样本筛选：是否过滤同组全对/全错样本、动态重采样或基于难度调度。
+4. 截断与奖励 shaping：长度上限附近如何惩罚，截断回答算失败还是部分有效。
+
+Dr. GRPO 的“unbiased”指它针对论文分析的特定策略梯度目标去除了特定归一化偏差，并非所有训练设置都无偏。2026 年的后续理论工作指出，在 outcome-reward 设定下，梯度无偏与轨迹贡献长度不变一般不能同时满足；比较长度归一化时，需要先说明优化目标，而不是只说某公式“正确”。[关于无偏与长度不变性的后续分析](https://arxiv.org/abs/2607.23364)
+
+方法比较应固定模型、prompt 集、奖励、rollout 数、最大长度和生成后端，再做单组件消融。若一次同时换 verifier、length normalization、采样温度、奖励 shaping 和优化器，就无法归因提升来源。
+
+### 8.5 推理与 Agent 后训练
 
 当动作不只是下一个 token，而包含工具调用或多步环境操作时，训练样本扩展为交互轨迹。需要定义环境状态、动作空间、工具结果、部分可观测信息、奖励归因和 episode 终止条件。关键问题包括：环境是否可复现、工具失败如何计分、奖励延迟如何归因、轨迹过长如何截断、策略版本变化后旧轨迹是否仍有效，以及模型是否学会安全地停止或升级给人。
 
 Agent 任务的评测不能只看最终回答文本。应同时记录任务成功率、步骤数、工具调用正确率、无效调用、超时/恢复、安全违规、成本和不同环境版本下的鲁棒性。若环境本身不代表真实任务，策略可能只适配模拟器。
 
-### 8.4 训练系统与性能
+### 8.6 RL 训练系统：从 rollout 到 optimizer step
 
-RL 系统的主要组件包括 rollout workers、reward/verifier workers、trainer、模型权重同步、数据队列和调度器。系统设计需考虑生成吞吐与训练吞吐不平衡、长序列拖慢批次、rollout policy 版本滞后、奖励服务延迟、失败任务恢复和 checkpoint 一致性。
+RL 系统通常分为生成、评分、训练和编排四层：
+
+```text
+Prompt / 任务采样
+    ↓
+Rollout workers ── 记录 token、log-prob、模型版本、终止原因
+    ↓
+Reward / Verifier workers ── 得分、子分项、错误与超时
+    ↓
+Trajectory buffer / 去重 / 过滤 / 过期样本策略
+    ↓
+Learner ── advantage、loss、反向传播、优化器更新
+    ↓
+权重同步 / checkpoint / 独立评测
+    └────────→ 新策略版本返回 rollout workers
+```
+
+rollout、reward 和 learner 可以同进程、共置在同一 GPU，也可以拆到不同资源池异步运行。共置减少权重传输和调度复杂度，但生成与训练会争抢显存和算力；分离能独立扩缩容，但会产生权重同步、RPC、队列积压和策略滞后的问题。
+
+#### Rollout 吞吐与异步更新
+
+系统的有效训练速度不是 `tokens/s` 单指标。可拆成：
+
+$$
+\text{有效更新吞吐} = \text{生成 token/s} \\times \text{有效轨迹比例} \\times \text{评分可用率} \\times \text{更新利用率}
+$$
+
+长尾回答会导致 batch straggler；高难度 prompt 可能反复采样而耗尽预算；verifier timeout 会降低有效样本率；训练端等待 rollout 造成 GPU 空转。应分别测量生成、评分、排队、梯度更新的 p50/p95 时延，并统计 prompt 到有效 optimizer step 的总时长。
+
+异步系统用旧策略采到的数据更新新策略，需为每条 trajectory 记录 behavior policy version。策略滞后越大，采样分布与当前 learner 分布差异越大；过期样本可以丢弃、限制最大滞后、使用重要性比率修正，或用算法专门处理 off-policy 数据。修正会引入方差；裁剪过强则可能丢掉有效梯度。
+
+#### Training-Inference Mismatch
+
+生成后端与训练端对同一模型权重、同一 token 序列计算出的 log-prob，应能在容许误差内对齐。以下差异会破坏策略比率：
+
+- sampler 使用的温度、top-p/top-k 与训练端 log-prob 定义不一致；
+- serving 和 learner 的 attention kernel、精度、归一化或 logits 处理不同；
+- EOS、stop sequence、截断、padding mask 或 chat template 处理不一致；
+- rollout 使用的权重版本与元数据记录不一致；
+- MoE routing、专家并行和并发调度引入不同的数值行为。
+
+训练崩溃排查前可运行 no-update parity check：固定权重、prompt、生成 token 和 mask，分别计算 sampler 与 learner 的每 token log-prob，统计最大绝对差、均方差和按 token 位置分布的差异。近期研究指出，训练与推理概率不匹配会独立影响 RL 稳定性，不能一概归结为普通浮点噪声。[Training-Inference Mismatch 研究](https://arxiv.org/abs/2605.14220)
+
+#### 显存和计算预算
+
+在线 RL 的显存要按运行时角色清点，而不是只算 policy 参数：
+
+| 组件 | 常见驻留内容 | 主要优化方向 |
+| --- | --- | --- |
+| Policy learner | 权重、梯度、optimizer states、activation | FSDP/ZeRO、混合精度、梯度检查点、并行策略 |
+| Rollout engine | 推理权重、KV cache、并发序列 | 精度策略、KV cache 管理、动态 batching |
+| Reference model | 冻结权重和每 token log-prob | 参数共享/卸载、缓存 log-prob、按目标选择 KL 计算方式 |
+| Reward model / judge | RM 权重、打分 batch、judge API 请求 | 独立弹性扩容、批量打分、降低昂贵 judge 调用 |
+| Trajectory / buffer | token、mask、log-prob、奖励、元数据 | 压缩、分块、过期回收、只保留训练必需字段 |
+
+多角色共置时，峰值显存往往出现在 rollout KV cache 与 learner optimizer/activation 重叠阶段。性能方案必须说明它降低的是峰值显存、tokens/s、通信时间、端到端 step time，还是单位有效更新成本。
 
 性能分析从瓶颈测量开始：GPU 利用率、MFU、tokens/s、生成延迟、显存峰值、通信等待、队列等待和有效样本比例。数据并行、张量并行、流水线并行、FSDP/ZeRO、序列并行、梯度检查点、混合精度和高效 attention 针对不同瓶颈，需通过 profile 和端到端基准验证。RL 训练还要计算 rollout 与评分成本，单看训练 step 时间不足以反映总样本效率。
 
-### 8.5 评测与实验方法
+### 8.7 训练问题的诊断矩阵
+
+| 现象 | 优先检查 | 可区分问题的证据 |
+| --- | --- | --- |
+| train reward 上升，独立 eval 不变或下降 | grader 投机、训练测试泄漏、目标分布漂移 | 高奖励样本盲审、隐藏测试、子奖励与外部 eval 相关性 |
+| entropy 快速下降、输出模式单一 | clip、采样温度、KL 系数、prompt 多样性 | token entropy 分布、候选去重率、策略/参考 KL |
+| completion 长度持续增长 | 长度归一化、过程奖励、截断和 overlong shaping | 按正确/错误轨迹分桶的长度、长度与奖励/成功率关系 |
+| 组内大多全对或全错 | 任务难度、采样数、verifier 分辨率 | per-prompt pass fraction、组内 reward std、有效组比例 |
+| KL 突增、有效样本骤降 | 学习率、更新 epoch、策略版本滞后、log-prob mismatch | ratio 分布、policy version age、sampler/learner parity |
+| GPU 利用率低、step time 方差大 | rollout / reward 等待、长尾 batch、通信和调度 | stage-level utilization、p50/p95 latency、队列长度和 straggler 比例 |
+| 训练后原有能力明显退化 | 数据配比、KL 锚定、训练时长、评测切片 | base/SFT/RL 多 checkpoint 对照、通用任务回归和领域切片 |
+
+诊断顺序应先验证数据与实现正确性，再看指标定义和策略优化，再定位分布式性能问题。单个总 reward 或总 tokens/s 无法区分这些原因。
+
+### 8.8 评测与实验方法
 
 - 建立冻结的测试集，隔离训练/开发数据与测试数据，记录数据版本和模型版本。
 - 对目标任务做分桶：难度、领域、语言、长度、工具类型、安全风险和长尾样本。
@@ -191,7 +317,77 @@ RL 系统的主要组件包括 rollout workers、reward/verifier workers、train
 - 做消融和多随机种子复验，报告方差、成本、推理延迟和回归能力。
 - 检查指标与产品目标是否一致，识别 reward hacking、benchmark 污染和用户分布漂移。
 
-## 九、复习顺序
+## 九、目标与训练方法的选型
+
+后训练方法的选择取决于反馈来源、在线采样预算和目标是否可验证。算法名称本身不能决定效果；数据分布、奖励定义、参考策略、生成配置和更新次数共同决定最终优化行为。
+
+| 训练目标 | 优先考虑的方法 | 优势 | 主要边界 |
+| --- | --- | --- | --- |
+| 补齐能力、格式或工具协议 | SFT | 监督信号直接，训练稳定，适合学习明确行为 | 依赖示范覆盖；模仿错误示范会固化错误模式 |
+| 从离线偏好对齐回答风格和质量 | DPO 类目标 | 无需单独在线采样和显式 critic，管线相对简单 | 偏好数据分布外泛化有限；过度训练可能偏离参考策略 |
+| 利用人类偏好持续采样优化 | RM + PPO 等 RLHF | 可在线探索并将标量偏好用于策略更新 | RM 误差会被策略放大；训练系统与超参更复杂 |
+| 目标有可执行的正确性判定 | SFT / rejection sampling + RLVR | verifier 可低成本批量反馈，支持扩大采样 | verifier 覆盖不足或可被投机时，分数不代表任务能力 |
+| 多步工具/环境交互任务 | Agentic SFT + 环境 RL | 直接优化环境中的任务完成行为 | 环境偏差、长时程 credit assignment、旧轨迹策略滞后 |
+| 资源有限，先提升候选质量 | 教师蒸馏 / rejection sampling | 可将教师能力转成学生监督，训练简单 | 教师覆盖与筛选造成选择偏差，多样性可能下降 |
+
+#### 离线偏好优化与在线 RL 的区别
+
+DPO 使用固定的偏好对，训练期间不必不断调用当前策略生成新回答；因此，成败很大程度取决于偏好数据对部署分布的覆盖，以及策略更新是否离开数据支持区域。在线 RL 可基于新策略继续生成并评分，能改善分布匹配，但需要可靠 verifier 或 reward、足够的有效 rollout 吞吐和稳定的更新控制。
+
+选择前要明确以下条件：
+
+1. 反馈来源：人类比较、规则判定、环境奖励还是教师答案？
+2. 反馈粒度：整条回答一个分数，还是步骤、工具动作和子目标分别打分？
+3. 探索价值：新策略采样能否发现训练数据中没有的更好行为？
+4. 判定可靠性：评分错误是否能独立审计，错误奖励能否被策略快速放大？
+5. 更新成本：生成、评分和训练的总成本，是否换来独立评测上的改善？
+
+若反馈不可靠，增加 rollout 数通常只会更快优化错误目标；若任务由示范即可覆盖，在线 RL 也可能没有足够收益抵偿系统成本。
+
+## 十、实验闭环与结果解释
+
+后训练实验应先把目标、测量方式和回滚条件写清楚，再启动长时间训练。一个可以复现的实验记录至少包括：基座与 tokenizer 版本、数据快照及过滤规则、prompt 模板、loss mask、采样参数、奖励/verifier 版本、policy 与 reference 配置、优化器与学习率、序列长度、并行布局、随机种子、代码 commit、checkpoint 和评测器版本。
+
+#### 消融应隔离变量
+
+实验对照至少保留 base/SFT 起点、当前生产或最强基线、目标方法和必要的消融项。每次改变一个主要因素，例如 verifier、数据混合、KL 系数、response loss 聚合、rollout temperature、采样数或最大长度。需要组合方法时使用小型 factorial 设计，避免把相关因素的效果混在一起。
+
+评测结论应同时展示：
+
+- 目标指标变化及置信区间，报告样本数和评测版本；
+- 按难度、领域、语言、长度和工具类型分桶后的变化；
+- 通用能力、安全、格式遵循和已有产品任务的回归项；
+- 训练 token、rollout 数、GPU 时长、评分调用量与在线推理成本；
+- 人工盲评与自动评分的一致性，以及高分失败样本的抽查结果。
+
+对成对模型比较，可固定 prompt 和评测条件，进行盲评或成对胜率比较，并用 bootstrap 估计不确定性。只报告单次平均分会掩盖长尾回归和评测噪声；只报告自动 grader 则会把 grader 的偏差误当作模型提升。
+
+#### 从实验结果到训练决策
+
+- 目标任务上升、通用任务下降：检查数据混合、目标权重、训练步数、KL 和分桶回归；考虑提前停止或回退 checkpoint。
+- reward 上升、人工偏好不变：检查 verifier 是否测到代理指标，抽查边际高分样本并扩大独立评测。
+- 单个 benchmark 上升、同类任务不变：检查污染、提示词模板依赖和测试集过拟合，使用未见来源的任务复测。
+- 平均指标上升、长尾失败恶化：按错误严重性和业务频率重新审视综合分数，不能由平均值覆盖高代价风险。
+- 离线评测改善、线上任务不变：检查线上分布、系统提示、工具环境和推理参数是否与训练假设一致。
+
+上线或扩大训练预算的依据应是独立任务质量、回归风险和单位成本的综合变化。遇到目标和副作用冲突时，先明确目标优先级，再调整数据或奖励；仅通过增大某一项奖励权重，可能让冲突更严重。
+
+## 十一、岗位能力映射
+
+公开岗位标题不统一，职责描述比 title 更能说明准备重点。下表将常见要求映射为需要掌握的知识和可展示的工程能力。
+
+| JD 关键词 | 需要理解 | 可验证的实践能力 |
+| --- | --- | --- |
+| Post-training / Alignment / Preference | SFT、偏好数据、RM、DPO、PPO、KL 和行为评估 | 解释目标函数选择，分析偏好噪声和策略退化 |
+| Reasoning / RLVR / Verifier | GRPO 与相关变体、pass@k、奖励饱和、长度效应 | 实现 verifier、分析全对/全错组，设计数据课程与消融 |
+| RL systems / Rollout / Distributed | 生成和 learner 的策略版本、异步队列、并行、显存与通信 | profile 端到端吞吐，定位 log-prob mismatch、长尾和资源争用 |
+| Agent / Tool use / Environment | 轨迹结构、工具协议、状态转移、延迟奖励、环境可靠性 | 构建可复现环境，分类任务失败和无效调用，评估成本与安全 |
+| Data synthesis / Flywheel | 数据来源、教师生成、筛选、标注质量、污染审计 | 设计过滤与抽样复核，追踪训练样本到评测变化的来源 |
+| Safety / Reward model / Rubric | 安全目标、偏好分歧、judge 校准、对抗稳健性 | 设计分项 rubric、构造边界案例并评估 false positive/negative |
+
+跨方向的共同要求是把算法假设变成可复现的实验，并用独立评测解释收益、代价和失败条件。若 JD 同时出现算法和 infra 词汇，应优先梳理算法如何依赖系统实现：例如 rollout 时延会影响策略数据新鲜度，生成参数会影响采样分布，verifier 成本会限制探索预算。
+
+## 十二、复习顺序
 
 知识点的依赖关系可以按以下顺序建立：
 
@@ -204,7 +400,7 @@ RL 系统的主要组件包括 rollout workers、reward/verifier workers、train
 
 基础知识与岗位侧重点应结合阅读：SFT/RM/RL 属于算法共同底座；若岗位写到 RL systems、Verl、并行或 NCCL，则需进一步掌握系统剖析；若写到 rubric、verifier、Agent environment 或 data flywheel，则优先补奖励判定、环境和数据回流设计。
 
-## 十、核心知识点速查
+## 十三、核心知识点速查
 
 - 后训练目标：把任务行为转化为可优化、可评估的监督信号。
 - SFT：目标 token 是什么，哪些 token 应被 mask，数据的覆盖和冲突如何处理。
@@ -224,7 +420,9 @@ RL 系统的主要组件包括 rollout workers、reward/verifier workers、train
 4. DeepSeek-AI et al., [DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948), 2025。
 5. Hugging Face, [TRL Quickstart](https://huggingface.co/docs/trl/main/quickstart), [PPO Trainer](https://huggingface.co/docs/trl/main/ppo_trainer), [GRPO Trainer](https://huggingface.co/docs/trl/main/grpo_trainer)。文档版本持续更新，具体接口以项目使用的版本为准。
 6. OpenAI, [Reinforcement fine-tuning guide](https://developers.openai.com/api/docs/guides/reinforcement-fine-tuning), [RFT use cases and grader design](https://developers.openai.com/api/docs/guides/rft-use-cases)。
-7. 招聘页面： [OpenAI Careers](https://openai.com/careers/search/?q=research), [Anthropic Production Model Post-Training](https://job-boards.greenhouse.io/anthropic/jobs/4613592008), [Anthropic RL Engineering](https://job-boards.greenhouse.io/anthropic/jobs/4952051008), [ByteDance Seed Foundation Model Campus Recruitment](https://seed.bytedance.com/en/seedearlycareer)。
-8. 招聘页面： [阿里巴巴 Qwen 后训练岗位目录](https://campus-talent.alibaba.com/campus/position?batchId=aliStar100000760001), [腾讯大模型强化学习框架研发](https://careers.tencent.com/jobdesc.html?postId=2072330929078190080), [腾讯 Agent RL 框架工程](https://careers.tencent.com/jobdesc.html?postId=2061654749727600640), [百度大模型算法工程师](https://talent.baidu.com/jobs/detail/SOCIAL/5fe4aa4c-b626-4659-9bfc-61ec2aa76c39), [Google DeepMind Careers](https://deepmind.google/careers/)。
+7. 方法论文： [DAPO: An Open-Source LLM Reinforcement Learning System at Scale](https://arxiv.org/abs/2503.14476), [Understanding R1-Zero-Like Training: A Critical Perspective](https://arxiv.org/abs/2503.20783), [GSPO: Group Sequence Policy Optimization](https://arxiv.org/abs/2507.18071)。后两项需对照论文具体目标与实现配置阅读。
+8. 系统诊断： [Diagnosing Training-Inference Mismatch in LLM Reinforcement Learning](https://arxiv.org/abs/2605.14220), [On the Impossibility of Unbiased and Length-Invariant Policy Optimization with Outcome Rewards](https://arxiv.org/abs/2607.23364)。2026 年工作用于补充理解训练推理一致性和长度归一化的边界。
+9. 招聘页面： [OpenAI Careers](https://openai.com/careers/search/?q=research), [Anthropic Production Model Post-Training](https://job-boards.greenhouse.io/anthropic/jobs/4613592008), [Anthropic RL Engineering](https://job-boards.greenhouse.io/anthropic/jobs/4952051008), [ByteDance Seed Foundation Model Campus Recruitment](https://seed.bytedance.com/en/seedearlycareer)。
+10. 招聘页面： [阿里巴巴 Qwen 后训练岗位目录](https://campus-talent.alibaba.com/campus/position?batchId=aliStar100000760001), [腾讯大模型强化学习框架研发](https://careers.tencent.com/jobdesc.html?postId=2072330929078190080), [腾讯 Agent RL 框架工程](https://careers.tencent.com/jobdesc.html?postId=2061654749727600640), [百度大模型算法工程师](https://talent.baidu.com/jobs/detail/SOCIAL/5fe4aa4c-b626-4659-9bfc-61ec2aa76c39), [Google DeepMind Careers](https://deepmind.google/careers/)。
 
 后训练知识的主线是监督信号、训练目标、系统实现与评测可信度。大厂岗位的差异主要体现在更偏研究算法、生产后训练、Agent 环境、数据飞轮，还是 RL 训练系统；复习时可先建立共同底座，再按目标岗位补齐专门方向。

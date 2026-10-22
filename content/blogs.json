@@ -121,13 +121,13 @@
   },
   {
     "title": "LLM Post-Training 岗位知识图谱：训练方法、工程闭环与大厂岗位要求",
-    "description": "梳理 SFT、RM、PPO、DPO、GRPO、奖励评测与 Agent RL，并对照 OpenAI、Anthropic、ByteDance Seed、阿里、腾讯、百度等公开岗位归纳知识重点。",
+    "description": "面向后训练算法、研究工程与训练系统岗位，梳理数据治理、奖励与 verifier、GRPO 系列方法、Agent RL、异步 rollout、训练推理一致性、诊断与大厂岗位侧重。",
     "tags": ["LLM", "Post-Training", "RLHF", "SFT", "DPO", "GRPO", "面试"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-22",
     "blogUrl": "llm-post-training-interview-guide.md",
     "category": "study",
-    "readingMinutes": 18,
+    "readingMinutes": 26,
     "shelf": "interview"
   },
   {
