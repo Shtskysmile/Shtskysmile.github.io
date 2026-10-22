@@ -260,24 +260,26 @@ $$
 
 环境转移项 $P(s_{t+1}\mid s_t,a_t)$ 在对数轨迹概率中的梯度为零，因此最后一行只剩策略的 log-prob 梯度。这说明无需对离散动作本身求导：采样动作后，用它的 log-prob 梯度乘以回报即可估计目标梯度。
 
-时刻 $t$ 的动作不会影响已经获得的奖励。把完整轨迹回报换成从 $t$ 开始的 reward-to-go，可减少无关奖励带来的方差：
+**从当前时刻开始的后续回报（reward-to-go）**，就是从动作 $a_t$ 之后到轨迹结束还能得到的折扣奖励。它不包括动作 $a_t$ 之前已经发生的奖励，因为当前动作无法改变过去。定义为：
 
 $$
 G_t=\sum_{k=t}^{T-1}\gamma^{k-t}r_k,\qquad
 \nabla_\theta J(\theta)=\mathbb{E}\left[\sum_{t=0}^{T-1}
-\nabla_\theta\log\pi_\theta(a_t\mid s_t)G_t\right].
+\gamma^t\nabla_\theta\log\pi_\theta(a_t\mid s_t)G_t\right].
 $$
+
+例如，模型依次生成“先”“计算”“答案是 4”，只有回答结束后验证正确才得到奖励 $+1$，中间 token 的即时奖励都是 0。若 $\gamma=1$，每个 token 对应的 $G_t$ 都包含之后最终得到的 $+1$；若 $\gamma<1$，离终点更远的 token 对该奖励会乘上更多折扣。这里的 $G_t$ 不是某个 token 自己收到的即时奖励，而是“从这个 token 开始往后”的累计回报。
 
 这就是 REINFORCE 的基本估计式。蒙特卡洛回报 $G_t$ 可提供无偏梯度估计，但不同采样轨迹的回报差异会使梯度方差很大。其更新方向具有直观解释：$G_t$ 较大的动作被提高概率，较小的动作被降低概率；一次更新的幅度仍取决于学习率、回报尺度和 log-prob 梯度。
 
-在自回归语言模型中，回答概率分解为 token 条件概率的乘积，取对数后变成求和：
+在自回归语言模型中，状态 $s_t$ 是 prompt 加此前已生成的 token，动作 $a_t$ 是当前要生成的 token。回答概率分解为 token 条件概率的乘积，取对数后变成求和：
 
 $$
 \pi_\theta(y\mid x)=\prod_{t=1}^{T}\pi_\theta(y_t\mid x,y_{<t}),\qquad
 \log\pi_\theta(y\mid x)=\sum_{t=1}^{T}\log\pi_\theta(y_t\mid x,y_{<t}).
 $$
 
-若奖励只在回答结束后给出 $R(x,y)$，REINFORCE 的序列级估计为 $R(x,y)\sum_t\nabla_\theta\log\pi_\theta(y_t\mid x,y_{<t})$。因此结果奖励会给回答中的多个 token 提供同一序列级方向；PPO 再用 Critic/GAE 估计更细的 token 级优势。
+若奖励只在回答结束后给出 $R(x,y)$，且 $\gamma=1$，REINFORCE 会用这一个结果奖励乘上回答中各 token 的 log-prob 梯度。因此结果奖励会给多个 token 提供相同的序列级学习信号，但这并不表示每个 token 对最终结果的实际贡献相同。PPO 使用 Critic 与 GAE 估计不同前缀、不同 token 的优势，给策略更新提供更细的信号。
 
 ### 4.2 基线、优势函数与 Actor-Critic
 
@@ -303,23 +305,55 @@ V^\pi(s)=\mathbb{E}_{a\sim\pi}[Q^\pi(s,a)],\qquad
 A^\pi(s,a)=Q^\pi(s,a)-V^\pi(s).
 $$
 
-$A^\pi(s,a)>0$ 表示该动作的回报高于策略在该状态下的平均水平；$A^\pi(s,a)<0$ 表示低于平均水平。Critic 学习 $V_\psi(s)$ 来估计基线，Actor 则用优势加权的 log-prob 梯度更新策略。Critic 不是用来直接选择动作的 Q-learning 模块，而是给策略梯度提供低方差的相对评价。
+$A^\pi(s,a)>0$ 表示该动作的回报高于策略在该状态下的平均水平；$A^\pi(s,a)<0$ 表示低于平均水平。**Critic** 是学习状态价值 $V_\psi(s_t)$ 的网络：看到 prompt 和当前生成前缀后，它预测“从这里继续生成，最终平均能得到多少回报”。训练时用 rollout 实际得到的回报来校准这个预测。
 
-### 4.3 降方差的估计：Monte Carlo、TD 与 GAE
+Critic 不负责判断最终回答是否正确，也不直接选择下一个 token；它提供一个状态相关的基线，供 Actor 比较当前 token 的结果好于还是差于预期。若只把终点奖励原样乘到所有 token 上，各 token 学习信号相同且方差较大；有了 Critic，就能用“实际观察到的后续结果”减去“当前前缀原本预期的结果”来判断动作是否带来了正向增量。
 
-纯 Monte Carlo 使用完整回报 $G_t$，不依赖价值估计但方差较高。TD(0) 用 Critic 对下一状态的估计 bootstrap：
+策略梯度定理也可写成按策略访问状态的期望形式：
+
+$$
+\nabla_\theta J(\theta)=
+\mathbb{E}_{s\sim d^{\pi_\theta},\,a\sim\pi_\theta}
+\left[\nabla_\theta\log\pi_\theta(a\mid s)Q^{\pi_\theta}(s,a)\right]
+=\mathbb{E}\left[\nabla_\theta\log\pi_\theta(a\mid s)A^{\pi_\theta}(s,a)\right],
+$$
+
+第二个等号使用了可减去的状态基线 $V^{\pi_\theta}(s)$。在函数逼近中，Critic 的估计通常有误差，因此优势估计的方差会下降，但也可能引入 bootstrap 偏差。[策略梯度定理](https://papers.nips.cc/paper_files/paper/1999/hash/464d828b85b0bed98e80ade0a5c43b0f-Abstract.html)
+
+此处的 $d^{\pi_\theta}$ 表示按当前策略访问状态的分布；在折扣目标下，它可取折扣状态访问分布。不同教材对该分布是否归一化的约定不同，常数因子会吸收到目标或采样期望定义中。
+
+### 4.3 从终点奖励到 token 优势：Monte Carlo、TD 与 GAE
+
+**GAE（Generalized Advantage Estimation，广义优势估计）**的作用是为每个生成位置估计 advantage，供策略梯度决定该 token 的概率应提高还是降低。它不是重新定义任务奖励，也不是把最终奖励按比例切成若干份；它把每一步 TD residual 组合起来，形成相对于 Critic 预期值的优势估计。
+
+纯 Monte Carlo 使用完整后续回报 $G_t$，不依赖价值估计但方差较高。TD(0) 用 Critic 对下一状态的估计 bootstrap，计算一步预测误差：
 
 $$
 \delta_t=r_t+\gamma(1-d_t)V_\psi(s_{t+1})-V_\psi(s_t),
 $$
 
-其中 $d_t=1$ 表示轨迹在 $t$ 后真实终止。单步 TD 优势估计为 $\hat A_t=\delta_t$。GAE 将多步 TD 残差按 $\gamma\lambda$ 加权求和：
+其中 $d_t=1$ 表示轨迹在 $t$ 后真实终止。$\delta_t$ 衡量“这一步实际得到的奖励，加上下一前缀的价值预测”与“当前前缀价值预测”之间的差。若实际后续结果比 Critic 预期好，$\delta_t$ 倾向为正；若比预期差，则倾向为负。单步 TD 优势估计为 $\hat A_t=\delta_t$。GAE 将当前和后续的 TD residual 按 $\gamma\lambda$ 加权累加：
 
 $$
 \hat A_t^{\mathrm{GAE}(\gamma,\lambda)}
-=\sum_{l=0}^{T-t-1}(\gamma\lambda)^l\delta_{t+l},\qquad
+=\sum_{l=0}^{T-t-1}(\gamma\lambda)^l
+\left[\prod_{j=0}^{l-1}(1-d_{t+j})\right]\delta_{t+l},\qquad
 \hat A_t=\delta_t+\gamma\lambda(1-d_t)\hat A_{t+1}.
 $$
+
+当 $l=0$ 时，空乘积定义为 1；若轨迹中途终止，乘积会屏蔽终止之后的残差。
+
+可以继续用“答案是 4，答对得 $+1$”理解它。假设三个生成位置的即时任务奖励都是 0，回答结束时才得到 $+1$。Critic 对每个前缀的成功期望分别预测为 $V(s_0)=0.2$、$V(s_1)=0.5$、$V(s_2)=0.8$，最后一个 token 生成后轨迹终止。取 $\gamma=1$，则：
+
+$$
+\delta_0=0+0.5-0.2=0.3,\qquad
+\delta_1=0+0.8-0.5=0.3,\qquad
+\delta_2=1-0.8=0.2.
+$$
+
+若 $\lambda=1$，从后往前累计得到 $\hat A_2=0.2$、$\hat A_1=0.3+0.2=0.5$、$\hat A_0=0.3+0.3+0.2=0.8$。因此早期 token 也能获得与最终答对有关的优势信号；Critic 越认为当前前缀本来就容易答对，该前缀的正向优势就越小。
+
+在 $\gamma=1,\lambda=1$ 且终点奖励为 $+1$ 的简化情形，优势会望远镜式地化为“最终回报减去该前缀的 Critic 预测”，即 $\hat A_t=1-V(s_t)$。这不是把 $+1$ 切成 token 奖励，而是评价从该 token 所处前缀继续生成的结果，比 Critic 原先预期好多少。$\lambda<1$ 时，越远的 TD residual 权重越小，优势更多依赖 Critic 的局部预测。
 
 $\lambda=0$ 时退化为单步 TD；$\lambda=1$ 且轨迹正确处理终止/截断时，接近用完整 Monte Carlo return 减去价值基线。中间取值在 bootstrap 偏差和采样方差之间折中。Critic 常用的回归目标为：
 
@@ -329,6 +363,16 @@ $$
 $$
 
 构造 $\hat A_t$ 和 $\hat R_t$ 时使用 rollout 对应的旧价值预测；目标随后固定，再训练新 Critic。若采样因长度上限截断而停止，是否将其当成终止以及是否使用末状态价值 bootstrap，必须与环境和数据实现一致。
+
+三者的分工可以概括如下：
+
+| 组件 | 回答的问题 | 产生的信号 |
+| --- | --- | --- |
+| 任务奖励 / Reward Model / verifier | 整个回答最终表现如何？ | 终点或过程中的任务奖励 $r_t$ |
+| Critic | 从当前 prompt 与 token 前缀继续生成，预期能得到多少回报？ | 状态价值 $V(s_t)$ |
+| TD residual | 当前一步的实际奖励和下一状态预测，与当前预测差多少？ | 局部预测误差 $\delta_t$ |
+| GAE | 把当前及未来的预测误差组合后，这个 token 的表现比预期好多少？ | token 级优势 $\hat A_t$ |
+| Actor / policy | 哪些 token 应更常生成？ | 按 $\hat A_t$ 更新 token 概率 |
 
 ### 4.4 Actor-Critic 架构
 
@@ -350,7 +394,9 @@ Critic（评论家）= 价值网络 V_φ(s)    → 负责"评估"（估计好坏
 | reward-to-go 有什么作用    | 去掉当前动作不可能影响的过去奖励，降低梯度估计方差                |
 | Baseline 为什么有效        | 条件期望下 $\mathbb{E}[\nabla\log\pi(a|s)b(s)]=0$，不改变期望梯度 |
 | Actor 和 Critic 各自做什么 | Actor 优化策略；Critic 回归状态价值并提供优势估计                 |
-| GAE 的 $\lambda$ 控制什么  | 控制多步 TD 残差的衰减，折中 bootstrap 偏差与采样方差             |
+| Critic 在 PPO 中做什么     | 估计每个 prompt/前缀的期望后续回报，为优势估计提供状态基线        |
+| GAE 在 PPO 中做什么        | 汇总多步 TD residual，为每个 token 估计相对 Critic 预期的优势      |
+| GAE 的 $\lambda$ 控制什么  | 控制未来 TD residual 的衰减，折中 Critic bootstrap 偏差与采样方差 |
 
 ---
 
@@ -427,7 +473,8 @@ $$
 
 $$
 \hat A_t^{\mathrm{GAE}(\gamma,\lambda)}
-=\sum_{l=0}^{T-t-1}(\gamma\lambda)^l\delta_{t+l}.
+=\sum_{l=0}^{T-t-1}(\gamma\lambda)^l
+\left[\prod_{j=0}^{l-1}(1-d_{t+j})\right]\delta_{t+l}.
 $$
 
 rollout 中先缓存旧 Critic 对每个状态的预测，再构造优势和回报目标：
@@ -445,7 +492,15 @@ V_{\mathrm{clip},t}=V_{\psi_{\mathrm{old}}}(s_t)+
 \operatorname{clip}(V_\psi(s_t)-V_{\psi_{\mathrm{old}}}(s_t),-\epsilon_V,\epsilon_V),
 $$
 
-并在未裁剪与裁剪后的平方误差中取较大者作为保守的价值损失。Value clipping 是 PPO 常见实现选项，不是 PPO-Clip 策略目标本身的必需组成。
+并在未裁剪与裁剪后的平方误差中取较大者作为保守的价值损失。对应形式为：
+
+$$
+\mathcal{L}^{\mathrm{VALUE}}_{\mathrm{clip}}(\psi)=\frac12\mathbb{E}_t\left[
+\max\left((V_\psi(s_t)-\hat R_t)^2,
+(V_{\mathrm{clip},t}-\hat R_t)^2\right)\right].
+$$
+
+Value clipping 是 PPO 常见实现选项，不是 PPO-Clip 策略目标本身的必需组成。
 
 ### 5.5 PPO 的联合目标与训练循环
 
@@ -470,11 +525,11 @@ $c_V$ 是价值损失系数，$c_H$ 是熵奖励系数。熵项在最小化损�
 
 $$
 r_t^{\mathrm{total}}=r_t^{\mathrm{task}}-
-\beta\left[\log\pi_\theta(y_t\mid x,y_{<t})-
+\beta\left[\log\pi_{\mathrm{rollout}}(y_t\mid x,y_{<t})-
 \log\pi_{\mathrm{ref}}(y_t\mid x,y_{<t})\right].
 $$
 
-通常 $r_t^{\mathrm{task}}=0$ 直到回答结束，再加入 RM 分数。该 sampled log-ratio 的策略期望对应 KL 惩罚；单条样本上的 log-ratio 可正可负，不应误称为逐 token 的精确 KL 值。padding token 不参与策略损失、价值损失和熵损失；EOS、环境终止和长度截断的 mask/bootstrap 规则必须一致。
+其中 $\pi_{\mathrm{rollout}}$ 是生成该回答的冻结旧策略。通常 $r_t^{\mathrm{task}}=0$ 直到回答结束，再加入 RM 分数；KL 惩罚在 rollout 阶段计算并固定，不能在 PPO 多轮更新中用变化中的 $\pi_\theta$ 重新定义同一批回报。该 sampled log-ratio 的策略期望对应 KL 惩罚；单条样本上的 log-ratio 可正可负，不应误称为逐 token 的精确 KL 值。padding token 不参与策略损失、价值损失和熵损失；EOS、环境终止和长度截断的 mask/bootstrap 规则必须一致。[GAE 论文](https://arxiv.org/abs/1506.02438)
 
 ### 5.6 为什么 PPO 在连续控制和大模型对齐中常见
 
@@ -521,6 +576,14 @@ PPO 的 Actor-Critic 路线需要训练价值估计器；RLHF 系统还可能同
 - Shaping 奖励设计不当 → 模型学会**刷 shaping 奖励**而不是完成真正目标（如"来回移动刷步数奖励"）
 - 本质：**优化目标和真实意图不一致**，是 reward hacking 的雏形
 - 理论保障：Potential-based shaping（F = γΦ(s') − Φ(s)）可以证明不改变最优策略
+
+Potential-based shaping 的标准形式为：
+
+$$
+r'(s,a,s')=r(s,a,s')+\gamma\Phi(s')-\Phi(s),
+$$
+
+其中 $\Phi(s)$ 是状态势函数。在满足相同折扣因子、终止状态及边界条件的前提下，这种奖励变换保持最优策略不变；任意手工添加的中间奖励则没有这一保证。
 
 ### 6.3 Reward Hacking / Specification Gaming（规格博弈）
 
@@ -611,29 +674,52 @@ PPO 的 Actor-Critic 路线需要训练价值估计器；RLHF 系统还可能同
 ### 8.3 奖励模型（Reward Model）
 
 - 数据：同一 prompt 下多个模型的回答，人工**排序**
-- 建模：**Bradley-Terry 模型**——把排序变成二分类（被选的 vs 被拒的）：
-  ```
-  P(y_w 优于 y_l) = σ( r(x, y_w) − r(x, y_l) )
-  损失：最大化 log σ(r_w − r_l)
-  ```
-- RM 输出一个标量分数，**在回答末尾加一个特殊 token 取它的 logit**（参数量通常与策略同规模，去掉最后的 softmax 头）
+- 建模：Bradley–Terry 模型把胜负概率写成奖励差的 sigmoid：
+
+$$
+P_\phi(y_w\succ y_l\mid x)=\sigma\!\left(r_\phi(x,y_w)-r_\phi(x,y_l)\right).
+$$
+
+对偏好样本集合 $\mathcal{D}=\{(x,y_w,y_l)\}$，最大化胜者优于败者的对数似然，等价于最小化负对数似然：
+
+$$
+\mathcal{L}_{\mathrm{RM}}(\phi)=-\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}
+\left[\log\sigma\!\left(r_\phi(x,y_w)-r_\phi(x,y_l)\right)\right].
+$$
+
+它学习的是同一 prompt 下的相对排序，而不是绝对质量标尺；对同一 prompt 的所有回答奖励同时加常数，不改变偏好概率。
+
+- RM 输出回答级标量分数；常见实现从最后一个有效 token 的隐藏状态接标量奖励头，具体读出位置和结构依模型实现而定。
 
 ### 8.4 PPO 在 LLM 上的实现细节
 
-```
-参与训练的模型（4 个）：
-  策略模型 π_θ（被优化，可 LoRA）
-  参考模型 π_ref（冻结，SFT 模型）
-  奖励模型 RM（冻结）
-  Critic 价值网络（估计 advantage，同规模）
+经典 PPO-RLHF 流水线通常包含策略 $\pi_\theta$、冻结的 reference $\pi_{\mathrm{ref}}$、冻结的 Reward Model $r_\phi$，以及 Critic $V_\psi$。四者职责不同；实现可能共享底座、量化或卸载部分模型，因此不必然对应四份完整常驻显存。
 
-奖励合成（关键细节）：
-  r_total = r_RM(x, y) − β·KL[π_θ(y|x) || π_ref(y|x)]
-  逐 token 算 KL：每一步生成的概率与参考模型对比
+对 prompt $x$ 与 rollout 回答 $y=(y_1,\ldots,y_T)$，RM 通常输出一个序列级任务奖励 $r_\phi(x,y)$，并把它加在回答末尾。策略相对 reference 的序列 log-ratio 可分解为 token 项：
 
-优化目标：
-  max E[ r_total ]  →  PPO clip 目标 + GAE advantage
-```
+$$
+\log\frac{\pi_{\mathrm{rollout}}(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)}
+=\sum_{t=1}^{T}\left[
+\log\pi_{\mathrm{rollout}}(y_t\mid x,y_{<t})-
+\log\pi_{\mathrm{ref}}(y_t\mid x,y_{<t})\right].
+$$
+
+常见的采样奖励写作：
+
+$$
+r_t^{\mathrm{total}}=r_t^{\mathrm{task}}-\beta k_t,\qquad
+k_t=\log\pi_{\mathrm{rollout}}(y_t\mid x,y_{<t})-
+\log\pi_{\mathrm{ref}}(y_t\mid x,y_{<t}),
+$$
+
+其中 $r_t^{\mathrm{task}}=0$ 对多数中间 token 成立，回答结束时加入 $r_\phi(x,y)$。$k_t$ 是 sampled log-ratio，其策略期望对应 KL 项，但单 token 样本值并非精确 KL，也可为负。$\beta$ 越大，策略偏离 reference 的代价越高。
+
+固定 rollout 的 $r_t^{\mathrm{total}}$ 后，使用 GAE 得到 $\hat A_t$、$\hat R_t$，再最小化：
+
+$$
+\mathcal{L}=-L^{\mathrm{CLIP}}(\theta)+c_V\mathcal{L}^{\mathrm{VALUE}}(\psi)
+-c_H\mathbb{E}_t[\mathcal{H}(\pi_\theta(\cdot\mid s_t))].
+$$
 
 ### 8.5 为什么必须有 KL 约束
 
@@ -665,24 +751,64 @@ PPO 的 Actor-Critic 路线需要训练价值估计器；RLHF 系统还可能同
 
 ## 九、DPO：不需要奖励模型的对齐 ★
 
-### 9.1 核心洞察（面试必答）
+### 9.1 从 KL 正则化最优策略到 DPO 损失
 
-RLHF 的最优策略有**闭式解**：
-
-$$
-\pi^{*}(y \mid x) \;\propto\; \pi_{\text{ref}}(y \mid x) \exp\!\left(\frac{r(x, y)}{\beta}\right)
-$$
-
-把它代回 Bradley-Terry 偏好概率，**奖励模型 r 可以被消掉**——偏好信息直接定义了策略的优化目标：
+DPO 中 $\pi_{\mathrm{ref}}$ 通常是偏好优化前冻结的 SFT 策略或指定初始策略快照；它既作为策略偏移基准，也出现在隐式奖励表达式中。推导从固定 prompt $x$ 的 KL 正则化奖励目标开始：
 
 $$
-\mathcal{L}_{\text{DPO}} = -\log \sigma\!\left(
-\beta \log \frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)}
-- \beta \log \frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}
-\right)
+\max_{\pi(\cdot\mid x)}\;
+\mathbb{E}_{y\sim\pi}[r(x,y)]-
+\beta D_{\mathrm{KL}}\!\left(\pi(\cdot\mid x)\|\pi_{\mathrm{ref}}(\cdot\mid x)\right),
+\qquad \sum_y\pi(y\mid x)=1.
 $$
 
-直觉（一句话）：**让"被人类选中的回答 y_w 的概率相对参考模型提升"，让"被拒绝的回答 y_l 的相对概率下降"。**
+对 $\pi(y\mid x)$ 加归一化约束并令一阶导数为零，可得最优策略的闭式解：
+
+$$
+\pi^*(y\mid x)=\frac{1}{Z(x)}\pi_{\mathrm{ref}}(y\mid x)
+\exp\!\left(\frac{r(x,y)}{\beta}\right),
+\qquad
+Z(x)=\sum_y\pi_{\mathrm{ref}}(y\mid x)\exp\!\left(\frac{r(x,y)}{\beta}\right).
+$$
+
+取对数并整理，可把奖励写成策略与 reference 的 log-ratio：
+
+$$
+r(x,y)=\beta\log\frac{\pi^*(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)}+
+\beta\log Z(x).
+$$
+
+对同一 prompt 的 chosen $y_w$ 和 rejected $y_l$ 求奖励差时，$\beta\log Z(x)$ 抵消。代入 Bradley–Terry 偏好概率，并用待训练策略 $\pi_\theta$ 参数化 $\pi^*$，得到 DPO 单样本 logit：
+
+$$
+z_\theta(x,y_w,y_l)=\beta\left[
+\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\mathrm{ref}}(y_w\mid x)}-
+\log\frac{\pi_\theta(y_l\mid x)}{\pi_{\mathrm{ref}}(y_l\mid x)}\right].
+$$
+
+因此偏好数据集 $\mathcal{D}$ 上的目标为：
+
+$$
+\mathcal{L}_{\mathrm{DPO}}(\theta)=-\mathbb{E}_{(x,y_w,y_l)\sim\mathcal{D}}
+\left[\log\sigma(z_\theta(x,y_w,y_l))\right].
+$$
+
+语言模型的序列 log-prob 是 token log-prob 的和：
+
+$$
+\log\pi_\theta(y\mid x)=\sum_{t=1}^{|y|}\log\pi_\theta(y_t\mid x,y_{<t}),
+$$
+
+实现时通常对 completion 部分求和，并屏蔽 prompt、padding 及不参与训练的 token。对单个偏好对求导：
+
+$$
+\nabla_\theta\ell_{\mathrm{DPO}}
+=-\beta\sigma(-z_\theta)\left[
+\nabla_\theta\log\pi_\theta(y_w\mid x)-
+\nabla_\theta\log\pi_\theta(y_l\mid x)\right].
+$$
+
+梯度下降提高 chosen 相对 rejected 的策略 log-prob；当偏好对已被模型正确区分、$z_\theta$ 很大时，$\sigma(-z_\theta)$ 变小，该样本梯度随之减弱。DPO 不必在训练时单独调用 RM 做在线打分，但仍需要偏好对和通常冻结的 reference 策略。[DPO 论文](https://arxiv.org/abs/2305.18290)
 
 ### 9.2 DPO vs RLHF（PPO）对比
 
@@ -720,21 +846,44 @@ $$
 
 ### 10.1 为什么需要 GRPO
 
-- PPO 需要 **critic（价值网络）** 估计 advantage——critic 与策略**同规模**，显存翻倍、工程复杂
+- PPO 需要 Critic 估计优势并训练价值头，会增加前向、反向计算与显存占用；是否额外增加一份完整模型取决于实现
 - 在"数学/代码推理"这类任务上，奖励是**规则化**的（答案对不对），不需要价值网络去估计
 - **GRPO（Group Relative Policy Optimization）**：去掉 critic，用**组内采样统计**代替
 
 ### 10.2 GRPO 算法
 
-```
-对每个问题 x，采样 G 个回答 {y_1, ..., y_G}（一组）
-对组内奖励做归一化（相对优势）：
-  A_i = (r_i − mean(r)) / std(r)
-用 A_i 做策略梯度更新 + KL 约束（与 PPO 相同的 clip 机制）
-```
+对同一 prompt $x$ 从 rollout 策略采样 $G$ 个回答 $y_1,\ldots,y_G$，奖励模型或 verifier 产生回答级分数 $R_i$。一种常见的组内标准化优势为：
 
-- **组内归一化**：谁比组内平均好就推高谁——不需要绝对奖励标定，只比相对
-- 收益：省掉 critic → **显存省一半以上**，训练更快、更稳
+$$
+\bar R=\frac1G\sum_{j=1}^{G}R_j,\qquad
+\hat A_i=\frac{R_i-\bar R}{\operatorname{std}(R_1,\ldots,R_G)+\epsilon_A}.
+$$
+
+$\hat A_i$ 通常在回答中的 token 间共享。定义 token-level 新旧策略比率：
+
+$$
+\rho_{i,t}(\theta)=
+\frac{\pi_\theta(y_{i,t}\mid x,y_{i,<t})}
+{\pi_{\mathrm{old}}(y_{i,t}\mid x,y_{i,<t})}.
+$$
+
+一个常见的 GRPO clipped 目标写为：
+
+$$
+D_{\mathrm{KL}}(\pi_\theta\|\pi_{\mathrm{ref}})=
+\mathbb{E}_{y\sim\pi_\theta(\cdot\mid x)}
+\left[\log\frac{\pi_\theta(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)}\right],
+$$
+
+$$
+\mathcal{J}_{\mathrm{GRPO}}(\theta)=
+\mathbb{E}\left[\frac1G\sum_{i=1}^{G}\frac1{|y_i|}\sum_{t=1}^{|y_i|}
+\min\!\left(\rho_{i,t}(\theta)\hat A_i,
+\operatorname{clip}(\rho_{i,t}(\theta),1-\epsilon,1+\epsilon)\hat A_i\right)\right]
+-\beta D_{\mathrm{KL}}(\pi_\theta\|\pi_{\mathrm{ref}}).
+$$
+
+不同论文与 trainer 对优势标准化、回答长度归一化、KL 形式和 token mask 的约定可能不同，公式应与目标实现一起核对。GRPO 以组内基线替代独立 Critic 的价值估计，省去一套价值回归训练；但每个 prompt 需要多条 rollout，组内奖励全相同也会导致中心化优势没有区分信号。[DeepSeekMath 论文](https://arxiv.org/abs/2402.03300)
 
 ### 10.3 RLVR：可验证奖励（Verifiable Rewards）
 
