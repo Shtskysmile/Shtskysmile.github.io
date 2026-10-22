@@ -92,6 +92,12 @@ export const BLOG_SHELVES: Record<
       sort: "selectable",
     },
     {
+      id: "interesting-questions",
+      name: "有意思的问题",
+      description: "值得多想一步的算法与计算机问题",
+      sort: "selectable",
+    },
+    {
       id: "ai-agents",
       name: "AI 与智能体",
       description: "大模型应用、智能体开发与工程实践",
