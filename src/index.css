@@ -115,6 +115,16 @@ input[type="submit"],
     scrollbar-color: #60a5fa #f5f5f4;
   }
 
+  /* 文章目录使用自绘的常显滚动条，隐藏系统滚动条以免重复显示。 */
+  .toc-scroll-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .toc-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
   .dark * {
     scrollbar-color: #3b82f6 #1c1917;
   }
