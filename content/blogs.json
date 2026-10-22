@@ -120,6 +120,17 @@
     "shelf": "interview"
   },
   {
+    "title": "LLM Post-Training 岗位知识图谱：训练方法、工程闭环与大厂岗位要求",
+    "description": "梳理 SFT、RM、PPO、DPO、GRPO、奖励评测与 Agent RL，并对照 OpenAI、Anthropic、ByteDance Seed、阿里、腾讯、百度等公开岗位归纳知识重点。",
+    "tags": ["LLM", "Post-Training", "RLHF", "SFT", "DPO", "GRPO", "面试"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-22",
+    "blogUrl": "llm-post-training-interview-guide.md",
+    "category": "study",
+    "readingMinutes": 18,
+    "shelf": "interview"
+  },
+  {
     "title": "数据结构与算法面试复习资料",
     "description": "复杂度分析、线性表、树、图、排序查找与动态规划的常见面试题，文末附限时短笔练习。",
     "tags": ["数据结构", "算法", "面试"],
