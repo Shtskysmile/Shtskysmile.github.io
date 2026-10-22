@@ -109,25 +109,14 @@
     "shelf": "memories"
   },
   {
-    "title": "大语言模型面试复习资料",
-    "description": "覆盖 Transformer、KV Cache、RoPE、预训练、工具调用、RAG、Agent、多模态等 14 章；后训练算法推导与工具训练详见独立专题。",
-    "tags": ["LLM", "面试", "Transformer", "RAG", "Agent"],
+    "title": "大语言模型面试复习：基础知识与后训练专题",
+    "description": "一篇系统复习资料，涵盖 Transformer、预训练、RAG、Agent、多模态，并以九章详解后训练目标、SFT、PPO/GAE、DPO、GRPO、DAPO、Dr. GRPO、GSPO、RLVR、工具交互、训练系统与大厂岗位要求。",
+    "tags": ["LLM", "面试", "Transformer", "Post-Training", "RLHF", "DPO", "GRPO", "RAG", "Agent"],
     "author": "Shtskysmile",
     "publishDate": "2026-10-02",
     "blogUrl": "llm-interview-review.md",
     "category": "study",
-    "readingMinutes": 73,
-    "shelf": "interview"
-  },
-  {
-    "title": "LLM Post-Training 岗位知识图谱：训练方法、工程闭环与大厂岗位要求",
-    "description": "独立专题详解 SFT、RM/PPO/GAE、DPO 推导、GRPO、DAPO、Dr. GRPO、GSPO、RLVR、工具调用训练与训练系统，并对照大厂岗位归纳能力要求。",
-    "tags": ["LLM", "Post-Training", "RLHF", "SFT", "DPO", "GRPO", "面试"],
-    "author": "Shtskysmile",
-    "publishDate": "2026-10-22",
-    "blogUrl": "llm-post-training-interview-guide.md",
-    "category": "study",
-    "readingMinutes": 41,
+    "readingMinutes": 112,
     "shelf": "interview"
   },
   {
