@@ -70,43 +70,49 @@ export function useArticleToc(articleRef: RefObject<HTMLElement | null>, ready: 
   useEffect(() => {
     if (items.length === 0) return;
 
-    let frame = 0;
-    const update = () => {
+    const headings = items
+      .map((item) => document.getElementById(item.id))
+      .filter((heading): heading is HTMLElement => heading !== null);
+    const updateAtBottom = () => {
       const last = items[items.length - 1];
-      // 到底时直接高亮最后一项：文末内容不够长，最后一节滚不到顶部，
-      // 否则点了「拔高」却会因为它在判定线下方而高亮成上一节
       const scrolledToBottom =
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
       if (scrolledToBottom && last) {
         setActiveId(last.id);
-        return;
       }
-
-      let current = items[0]?.id ?? "";
-      for (const item of items) {
-        const el = document.getElementById(item.id);
-        if (!el) continue;
-        if (el.getBoundingClientRect().top <= ACTIVE_OFFSET) current = item.id;
-        else break;
-      }
-      setActiveId(current);
     };
 
-    const onScroll = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        update();
-      });
+    let observer: IntersectionObserver | null = null;
+    const observeHeadings = () => {
+      observer?.disconnect();
+      observer = new IntersectionObserver(
+        (entries) => {
+          const crossingHeading = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+          if (crossingHeading) setActiveId((crossingHeading.target as HTMLElement).id);
+          updateAtBottom();
+        },
+        {
+          // Observe a one-pixel band at the old active-heading threshold.
+          rootMargin: `-${ACTIVE_OFFSET}px 0px -${Math.max(0, window.innerHeight - ACTIVE_OFFSET - 1)}px 0px`,
+          threshold: 0,
+        },
+      );
+      headings.forEach((heading) => observer?.observe(heading));
     };
+    observeHeadings();
 
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    const first = items[0];
+    if (first) setActiveId(first.id);
+    updateAtBottom();
+
+    window.addEventListener("scroll", updateAtBottom, { passive: true });
+    window.addEventListener("resize", observeHeadings);
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frame) cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener("scroll", updateAtBottom);
+      window.removeEventListener("resize", observeHeadings);
     };
   }, [items]);
 
@@ -116,6 +122,7 @@ export function useArticleToc(articleRef: RefObject<HTMLElement | null>, ready: 
 export default function ArticleToc({ items, activeId }: { items: TocItem[]; activeId: string }) {
   const prefersReduced = useReducedMotion();
   const navRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const [thumb, setThumb] = useState({ height: 100, top: 0, value: 0 });
@@ -138,10 +145,27 @@ export default function ArticleToc({ items, activeId }: { items: TocItem[]; acti
   }, []);
 
   useEffect(() => {
+    const container = containerRef.current;
     const nav = navRef.current;
-    if (!nav) return;
+    if (!container || !nav) return;
+
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY === 0) return;
+
+      const multiplier =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? 16
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? nav.clientHeight
+            : 1;
+      nav.scrollTop += event.deltaY * multiplier;
+      event.preventDefault();
+    };
 
     syncThumb();
+    // React delegates wheel events through a passive listener in some browsers.
+    // A native non-passive listener lets the TOC own wheel gestures reliably.
+    container.addEventListener("wheel", onWheel, { passive: false });
     nav.addEventListener("scroll", syncThumb, { passive: true });
     const observer = new ResizeObserver(syncThumb);
     observer.observe(nav);
@@ -150,6 +174,7 @@ export default function ArticleToc({ items, activeId }: { items: TocItem[]; acti
     window.addEventListener("resize", syncThumb);
 
     return () => {
+      container.removeEventListener("wheel", onWheel);
       nav.removeEventListener("scroll", syncThumb);
       observer.disconnect();
       window.removeEventListener("resize", syncThumb);
@@ -215,22 +240,14 @@ export default function ArticleToc({ items, activeId }: { items: TocItem[]; acti
 
   return (
     <div
+      ref={containerRef}
       className="sticky top-28 hidden h-[calc(100vh-9rem)] min-h-0 gap-2 lg:flex"
-      onWheel={(event) => {
-        const nav = navRef.current;
-        if (!nav || nav.contains(event.target as Node) || event.deltaY === 0) return;
-
-        // The custom scrollbar track is outside the scrollable nav. Route trackpad
-        // gestures there to the TOC instead of letting the article page scroll.
-        nav.scrollTop += event.deltaY;
-        event.preventDefault();
-      }}
     >
       <nav
         ref={navRef}
         id="article-toc"
         aria-label="目录"
-        className="toc-scroll-container min-h-0 flex-1 overflow-y-auto pb-8 pr-1"
+        className="toc-scroll-container min-h-0 flex-1 overscroll-contain overflow-y-auto pb-8 pr-1"
       >
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
           目录

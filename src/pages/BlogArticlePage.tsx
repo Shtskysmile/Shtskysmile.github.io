@@ -331,7 +331,7 @@ export default function BlogArticlePage() {
                 {/* Article content */}
                 <article
                   ref={articleRef}
-                  className="prose prose-stone max-w-none dark:prose-invert"
+                  className="article-content prose prose-stone max-w-none dark:prose-invert"
                 >
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkNote, remarkMath]}

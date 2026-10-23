@@ -125,6 +125,13 @@ input[type="submit"],
     display: none;
   }
 
+  /* Long markdown posts contain many rendered blocks (code, tables and math).
+     Defer off-screen block layout/paint until it approaches the viewport. */
+  .article-content > * {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 8rem;
+  }
+
   .dark * {
     scrollbar-color: #3b82f6 #1c1917;
   }
