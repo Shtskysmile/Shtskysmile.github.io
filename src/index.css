@@ -340,6 +340,94 @@ input[type="submit"],
   padding: 0.25em 0;
 }
 
+/* ── 首页摸摸头：立绘与互动装饰留在卡片内。 ── */
+.headpat-card {
+  background-image: radial-gradient(ellipse at 50% 30%, rgb(221 214 254 / 0.45), transparent 75%);
+}
+
+.dark .headpat-card {
+  background-image: radial-gradient(ellipse at 50% 30%, rgb(109 89 150 / 0.2), transparent 75%);
+}
+
+.headpat-portrait {
+  width: 100%;
+  isolation: isolate;
+}
+
+.headpat-portrait::before {
+  position: absolute;
+  inset: 10% 0 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(196 181 253 / 0.28), transparent 70%);
+  content: "";
+}
+
+.headpat-character {
+  position: relative;
+  transform-origin: center bottom;
+}
+
+.headpat-note {
+  border-color: rgb(167 139 250 / 0.4);
+  background: rgb(221 214 254 / 0.12);
+}
+
+.headpat-petted {
+  animation: headpat-nuzzle 500ms ease-in-out;
+}
+
+.headpat-heart {
+  position: absolute;
+  top: 8%;
+  right: 7%;
+  z-index: 20;
+  color: #f9a8d4;
+  animation: headpat-heart 800ms ease-out both;
+}
+
+.headpat-secret-stars {
+  transform-origin: center;
+  animation: headpat-stars 650ms ease-out both;
+}
+
+@keyframes headpat-nuzzle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(-3deg) translateY(3px);
+  }
+  70% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes headpat-heart {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6);
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-18px) scale(1.1);
+  }
+}
+
+@keyframes headpat-stars {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
