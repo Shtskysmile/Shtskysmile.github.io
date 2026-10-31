@@ -1,5 +1,16 @@
 [
   {
+    "title": "纯 rank 无 pub：电子科大计算机 1/163 的保研记",
+    "description": "电子科大计算机 rank 1/163，没有 pub，二月只有一篇期刊在投。从学长的一番话讲到软微、AIDS、人苏、高瓴、清深的夏令营，按时间顺序记下这一年。",
+    "tags": ["保研", "夏令营", "电子科大", "无 pub", "经验"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-31",
+    "blogUrl": "baoyan-rank1-no-pub.md",
+    "category": "uestc",
+    "readingMinutes": 9,
+    "shelf": "baoyan"
+  },
+  {
     "title": "具身智能算法面试复习：从 VLM 到 VLA",
     "description": "面向熟悉大模型微调、刚接触具身智能的求职者，梳理 VLM/VLA、SLAM/Nav2、示范学习、数据闭环、训练部署，并细讲 Jev 相关 RLCD 独立实现论文。",
     "tags": ["具身智能", "VLM", "VLA", "机器人学习", "面试", "模仿学习", "SLAM", "Nav2", "Jev", "RLCD"],

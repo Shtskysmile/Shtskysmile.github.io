@@ -153,5 +153,11 @@ export const BLOG_SHELVES: Record<
       description: "课程复习资料与学习资源指引",
       sort: "selectable",
     },
+    {
+      id: "baoyan",
+      name: "保研经验",
+      description: "夏令营、预推免与保研过程的记录",
+      sort: "selectable",
+    },
   ],
 };
