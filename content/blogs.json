@@ -1,5 +1,16 @@
 [
   {
+    "title": "具身智能算法面试复习：从 VLM 到 VLA",
+    "description": "面向熟悉大模型微调、刚接触具身智能的求职者，梳理 VLM/VLA、SLAM/Nav2、示范学习、数据闭环、训练部署，并细讲 Jev 相关 RLCD 独立实现论文。",
+    "tags": ["具身智能", "VLM", "VLA", "机器人学习", "面试", "模仿学习", "SLAM", "Nav2", "Jev", "RLCD"],
+    "author": "Shtskysmile",
+    "publishDate": "2026-10-26",
+    "blogUrl": "embodied-ai-interview-review.md",
+    "category": "study",
+    "readingMinutes": 32,
+    "shelf": "interview"
+  },
+  {
     "title": "合并两个有序表：从 O(m·n) 到 O(N) 的原地算法",
     "description": "从逐元素插入到旋转分治，再到内部缓冲区归并，逐层分析两个有序表原地合并的时间与空间代价与各自的适用边界。",
     "tags": ["数据结构", "算法", "归并", "原地算法", "复杂度分析"],
