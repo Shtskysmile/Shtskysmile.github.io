@@ -110,6 +110,37 @@ export default function CategoryPage() {
     );
   }
 
+  if (category.id === HIDDEN_CATEGORY_ID) {
+    const canonical = `${BASE_URL}/categories/${category.id}`;
+
+    return (
+      <>
+        <Helmet>
+          <title>{`深渊区域施工中 | ${SITE_NAME}`}</title>
+          <meta name="description" content="深渊区域正在施工，稍后再来看看吧。" />
+          <link rel="canonical" href={canonical} />
+        </Helmet>
+        <main className="surface-panel mx-auto my-6 flex min-h-80 w-[calc(100%-2rem)] max-w-6xl flex-col items-center justify-center rounded-2xl p-8 text-center sm:p-12">
+          <span className="mb-4 text-5xl" aria-hidden="true">
+            🚧
+          </span>
+          <h1 className="font-heading text-2xl text-stone-800 dark:text-stone-100">
+            深渊区域正在施工
+          </h1>
+          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+            这里暂时关闭，稍后再来看看吧。
+          </p>
+          <Link
+            to="/blogs"
+            className="mt-6 text-sm text-accent underline-offset-4 transition-colors hover:underline"
+          >
+            返回全部文章
+          </Link>
+        </main>
+      </>
+    );
+  }
+
   const canonical = `${BASE_URL}/categories/${category.id}`;
   // 深渊区域：给面板挂上 dark 作用域，整个内容区强制走暗色；abyss-panel
   // 再把它压得比站点普通暗色模式更沉（见 index.css）
